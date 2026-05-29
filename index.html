@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>배드민턴 클럽</title>
+<title>ShuttleLog</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -193,12 +193,13 @@ body{
 <div id="login-screen">
   <div class="login-card">
     <div class="login-logo">🏸</div>
-    <div class="login-title">배드민턴 클럽</div>
+    <div class="login-title">ShuttleLog</div><div style="font-size:13px;color:var(--green);margin-top:2px;margin-bottom:2px">배드민턴 기록 프로그램</div>
     <div class="login-sub">Google 계정으로 로그인하면<br>나만의 훈련 데이터가 저장됩니다</div>
     <button class="google-btn" onclick="signInWithGoogle()">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
       Google로 로그인
     </button>
+      <div style="font-size:11px;color:var(--text3);margin-top:20px">© Copyright 김정환</div>
   </div>
 </div>
 
@@ -211,7 +212,7 @@ body{
 <div id="page-home" class="page active">
   <div class="home-header">
     <div class="home-header-inner">
-      <div class="home-header-title">🏸 배드민턴 클럽</div>
+      <div class="home-header-title">🏸 ShuttleLog <span style="font-size:13px;font-weight:400;opacity:0.8">배드민턴 기록 프로그램</span></div>
       <div class="home-header-sub" id="today-date"></div>
       <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px">
         <div class="user-badge">
@@ -511,6 +512,7 @@ body{
   <button class="nav-btn" onclick="showPage('memo',this)"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>장비</button>
   <button class="nav-btn" onclick="showPage('game',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>게임</button>
 </nav>
+<div style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--text3);opacity:0.6;pointer-events:none">© Copyright 김정환</div>
 
 <!-- Firebase SDK -->
 <script type="module">
