@@ -329,13 +329,13 @@ body{
 <!-- ══ 모달 ══ -->
 <!-- 일지 -->
 <div class="modal-overlay" id="modal-log">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-title">훈련 기록 추가</div>
+  <div class="modal"><div class="modal-handle"></div><div class="modal-title" id="modal-log-title">훈련 기록 추가</div><input type="hidden" id="log-edit-id">
     <div class="form-row">
       <div class="form-group"><label>날짜</label><input type="date" id="log-date"></div>
       <div class="form-group"><label>유형</label><select id="log-type"><option>훈련</option><option>레슨</option><option>대회</option><option>자체게임</option></select></div>
     </div>
     <div class="form-row">
-      <div class="form-group"><label>장소</label><input type="text" id="log-place" placeholder="수원실내체육관"></div>
+      <div class="form-group"><label>장소</label><input type="text" id="log-place" placeholder="장소 입력"></div>
       <div class="form-group"><label>시간(분)</label><input type="number" id="log-duration" placeholder="90" min="0"></div>
     </div>
     <div class="form-group"><label>상대/파트너</label><input type="text" id="log-partner"></div>
@@ -357,7 +357,7 @@ body{
         <span class="star" onclick="setStars('focusRating',5)">★</span>
       </div>
     </div>
-    <div class="btn-row"><button class="btn btn-green" onclick="saveLog()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-log')">취소</button></div>
+    <div class="btn-row"><button class="btn btn-green" id="log-save-btn" onclick="saveLog()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-log');document.getElementById('log-edit-id').value='';document.getElementById('modal-log-title').textContent='훈련 기록 추가';document.getElementById('log-save-btn').textContent='저장'">취소</button></div>
   </div>
 </div>
 
@@ -668,10 +668,10 @@ function renderHome() {
   const thisMonth = state.logs.filter(l=>{const d=new Date(l.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
   const totalMin = state.logs.reduce((a,l)=>a+(Number(l.duration)||0),0);
   document.getElementById('home-stats').innerHTML=`
-    <div class="stat-card"><div class="stat-val">${state.logs.length}</div><div class="stat-lbl">총 훈련 기록</div></div>
-    <div class="stat-card"><div class="stat-val">${thisMonth.length}</div><div class="stat-lbl">이번 달</div></div>
-    <div class="stat-card"><div class="stat-val">${Math.round(totalMin/60)}h</div><div class="stat-lbl">총 훈련시간</div></div>
-    <div class="stat-card"><div class="stat-val">${wr!==null?wr+'%':'-'}</div><div class="stat-lbl">전체 승률</div></div>`;
+    <div class="stat-card" style="cursor:pointer" onclick="showPage('log',document.querySelectorAll('.nav-btn')[1])"><div class="stat-val">${state.logs.length}</div><div class="stat-lbl">총 훈련 기록</div></div>
+    <div class="stat-card" style="cursor:pointer" onclick="showPage('log',document.querySelectorAll('.nav-btn')[1])"><div class="stat-val">${thisMonth.length}</div><div class="stat-lbl">이번 달</div></div>
+    <div class="stat-card" style="cursor:pointer" onclick="showPage('stats',document.querySelectorAll('.nav-btn')[4])"><div class="stat-val">${Math.round(totalMin/60)}h</div><div class="stat-lbl">총 훈련시간</div></div>
+    <div class="stat-card" style="cursor:pointer" onclick="showPage('game',document.querySelectorAll('.nav-btn')[7])"><div class="stat-val">${wr!==null?wr+'%':'-'}</div><div class="stat-lbl">전체 승률</div></div>`;
   const upcoming = state.events.filter(e=>new Date(e.date)>=new Date(now.toDateString())).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
   const upEl = document.getElementById('home-upcoming');
   upEl.innerHTML = upcoming.length ? upcoming.map(e=>{
@@ -683,8 +683,11 @@ function renderHome() {
       <span class="badge badge-${e.type}">${e.type}</span></div>`;
   }).join('') : '<p class="empty-msg" style="padding:8px 0">다가오는 일정 없음</p>';
   document.getElementById('home-recent').innerHTML = state.logs.slice(0,3).map(l=>`
-    <div class="card"><div style="font-size:13px;font-weight:500">${l.date} <span class="badge badge-${l.type}">${l.type}</span></div>
-    <div style="font-size:12px;color:var(--text3);margin-top:3px">${l.focus||'집중기술 미기록'}${l.duration?' · '+l.duration+'분':''}</div></div>`).join('')
+    <div class="card" style="cursor:pointer" onclick="openEditLog('${l.id}')">
+      <div style="font-size:13px;font-weight:500">${l.date} <span class="badge badge-${l.type}">${l.type}</span></div>
+      <div style="font-size:12px;color:var(--text3);margin-top:3px">${l.focus||'집중기술 미기록'}${l.duration?' · '+l.duration+'분':''}</div>
+      <div style="font-size:11px;color:var(--green);margin-top:4px">탭하여 편집 ›</div>
+    </div>`).join('')
     || '<p class="empty-msg">훈련 기록이 없습니다</p>';
 }
 
@@ -697,19 +700,44 @@ window.filterLogs = (type,btn) => {
 function renderLogList() {
   const list = logFilter==='전체'?state.logs:state.logs.filter(l=>l.type===logFilter);
   document.getElementById('log-list').innerHTML = list.length ? list.map(l=>`
-    <div class="card">
+    <div class="card" style="cursor:pointer" onclick="openEditLog('${l.id}')">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span class="badge badge-${l.type}">${l.type}</span>
         <span style="font-size:13px;font-weight:500;flex:1">${l.date}${l.place?' · '+l.place:''}</span>
-        <button class="del-btn" onclick="deleteLog('${l.id}')">✕</button>
+        <button class="del-btn" onclick="event.stopPropagation();deleteLog('${l.id}')">✕</button>
       </div>
       ${l.focus?`<div style="font-size:12px;color:var(--text2);margin-bottom:3px">🎯 ${l.focus}</div>`:''}
       ${l.duration?`<div style="font-size:12px;color:var(--text3)">⏱ ${l.duration}분${l.partner?' · 👤 '+l.partner:''}</div>`:''}
       ${l.good?`<div style="font-size:12px;color:var(--green-dark);margin-top:5px">✓ ${l.good}</div>`:''}
       ${l.improve?`<div style="font-size:12px;color:#993C1D;margin-top:2px">↑ ${l.improve}</div>`:''}
       ${(Number(l.condition)||Number(l.focusRating))?`<div style="font-size:11px;color:var(--text3);margin-top:5px">컨디션 ${'★'.repeat(Number(l.condition)||0)} 집중도 ${'★'.repeat(Number(l.focusRating)||0)}</div>`:''}
+      <div style="font-size:11px;color:var(--green);margin-top:4px">탭하여 편집 ›</div>
     </div>`).join('') : '<p class="empty-msg">기록이 없습니다</p>';
 }
+window.openEditLog = id => {
+  const l = state.logs.find(l=>l.id===id); if(!l) return;
+  document.getElementById('log-edit-id').value = id;
+  document.getElementById('log-date').value = l.date||'';
+  document.getElementById('log-type').value = l.type||'훈련';
+  document.getElementById('log-place').value = l.place||'';
+  document.getElementById('log-duration').value = l.duration||'';
+  document.getElementById('log-partner').value = l.partner||'';
+  document.getElementById('log-focus').value = l.focus||'';
+  document.getElementById('log-good').value = l.good||'';
+  document.getElementById('log-improve').value = l.improve||'';
+  document.getElementById('log-memo').value = l.memo||'';
+  ratings.condition = Number(l.condition)||0;
+  ratings.focusRating = Number(l.focusRating)||0;
+  document.querySelectorAll('#stars-condition .star').forEach((s,i)=>s.classList.toggle('on',i<ratings.condition));
+  document.querySelectorAll('#stars-focusRating .star').forEach((s,i)=>s.classList.toggle('on',i<ratings.focusRating));
+  document.getElementById('modal-log-title').textContent = '훈련 기록 편집';
+  document.getElementById('log-save-btn').textContent = '수정';
+  openModal('modal-log');
+};
+
+window.hideRoutine = id => { const r=state.routines.find(r=>r.id===id); if(r){r._hidden=true;renderRoutines();} };
+window.showHiddenRoutines = cat => { state.routines.filter(r=>r.category===cat&&r._hidden).forEach(r=>r._hidden=false); renderRoutines(); };
+
 window.saveLog = async () => {
   const data={date:document.getElementById('log-date').value,type:document.getElementById('log-type').value,
     place:document.getElementById('log-place').value,duration:document.getElementById('log-duration').value,
@@ -717,13 +745,25 @@ window.saveLog = async () => {
     good:document.getElementById('log-good').value,improve:document.getElementById('log-improve').value,
     memo:document.getElementById('log-memo').value,condition:ratings.condition,focusRating:ratings.focusRating};
   if(!data.date){showToast('날짜를 입력하세요');return;}
-  const item = await addItem('logs', data);
-  state.logs.unshift(item); state.logs.sort((a,b)=>b.date.localeCompare(a.date));
+  const editId = document.getElementById('log-edit-id').value;
+  if(editId) {
+    data.id = editId;
+    await updItem('logs', editId, data);
+    const l = state.logs.find(l=>l.id===editId); if(l) Object.assign(l,data);
+    showToast('수정되었습니다');
+  } else {
+    const item = await addItem('logs', data);
+    state.logs.unshift(item); state.logs.sort((a,b)=>b.date.localeCompare(a.date));
+    showToast('저장되었습니다');
+  }
   closeModal('modal-log');
+  document.getElementById('log-edit-id').value='';
+  document.getElementById('modal-log-title').textContent='훈련 기록 추가';
+  document.getElementById('log-save-btn').textContent='저장';
   ['log-place','log-duration','log-partner','log-focus','log-good','log-improve','log-memo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   ratings={condition:0,focusRating:0};
   document.querySelectorAll('.star').forEach(s=>s.classList.remove('on'));
-  renderLogList(); renderHome(); renderStats(); showToast('저장되었습니다');
+  renderLogList(); renderHome(); renderStats();
 };
 window.deleteLog = async id => {
   if(!confirm('삭제하시겠습니까?'))return;
@@ -739,14 +779,16 @@ function renderRoutines() {
     const items=state.routines.filter(r=>r.category===cat);
     const done=items.filter(r=>r._done).length;
     html+=`<div class="routine-cat-title"><span>${cat}</span><span style="font-weight:400;color:var(--text3)">${done}/${items.length}</span></div>`;
-    html+=items.map(r=>`
+    html+=items.filter(r=>!r._hidden).map(r=>`
       <div class="routine-item${r._done?' done':''}">
         <input type="checkbox" ${r._done?'checked':''} onchange="toggleRoutine('${r.id}',this.checked)">
         <span class="r-name">${r.name}</span>
         <span class="r-dur">${r.duration||''}${r.duration&&r.reps?' / ':''}${r.reps||''}</span>
         <button class="edit-btn" onclick="openEditRoutine('${r.id}')">✎</button>
-        <button class="del-btn" onclick="deleteRoutine('${r.id}')">✕</button>
+        <button class="del-btn" title="제외" onclick="hideRoutine('${r.id}')">−</button>
       </div>`).join('');
+    const hidden=items.filter(r=>r._hidden);
+    if(hidden.length) html+=`<div style="font-size:11px;color:var(--text3);margin:4px 0 8px;cursor:pointer" onclick="showHiddenRoutines('${cat}')">제외된 항목 ${hidden.length}개 표시 ▾</div>`;
   });
   document.getElementById('routine-list').innerHTML=html;
 }
@@ -848,7 +890,7 @@ function renderStats() {
   for(let i=7;i>=0;i--){
     const start=new Date(now);start.setDate(start.getDate()-i*7-6);
     const end=new Date(now);end.setDate(end.getDate()-i*7);
-    weekly.push({label:'-'+i+'w',count:logs.filter(l=>{const d=new Date(l.date);return d>=start&&d<=end;}).length});
+    const lbl=i===0?'이번주':i===1?'지난주':i+'주전';weekly.push({label:lbl,count:logs.filter(l=>{const d=new Date(l.date);return d>=start&&d<=end;}).length});
   }
   const mw=Math.max(...weekly.map(w=>w.count),1);
   document.getElementById('weekly-chart').innerHTML=weekly.map(w=>`<div class="bar-col"><div class="bar-val">${w.count}</div><div class="bar" style="height:${Math.round((w.count/mw)*80)+3}px;background:var(--green)"></div><div class="bar-lbl">${w.label}</div></div>`).join('');
