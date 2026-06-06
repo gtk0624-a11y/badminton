@@ -357,7 +357,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <div class="form-group"><label>집중 기술</label><input type="text" id="log-focus" placeholder="백핸드 드롭, 스매시"></div>
     <div class="form-group"><label>잘된 점</label><textarea id="log-good"></textarea></div>
     <div class="form-group"><label>개선할 점</label><textarea id="log-improve"></textarea></div>
-    <div class="form-group"><label>메모</label><input type="text" id="log-memo"></div>
+    <div class="form-group"><label>메모</label><textarea id="log-memo" style="min-height:60px"></textarea></div>
     <div class="form-row">
       <div class="form-group"><label>컨디션</label>
         <div class="stars" id="stars-condition">
@@ -724,12 +724,11 @@ window.filterLogs = (type,btn) => {
 function renderLogList() {
   const list = logFilter==='전체'?state.logs:state.logs.filter(l=>l.type===logFilter);
   document.getElementById('log-list').innerHTML = list.length ? list.map(l=>`
-    <div class="card">
+    <div class="card" onclick="openEditLog('${l.id}')" style="cursor:pointer">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span class="badge badge-${l.type}">${l.type}</span>
         <span style="font-size:13px;font-weight:500;flex:1">${l.date}${l.place?' · '+l.place:''}</span>
-        <button class="edit-btn" onclick="openEditLog('${l.id}')">✎</button>
-        <button class="del-btn" onclick="deleteLog('${l.id}')">✕</button>
+        <button class="del-btn" onclick="event.stopPropagation();deleteLog('${l.id}')">✕</button>
       </div>
       ${l.focus?`<div style="font-size:12px;color:var(--text2);margin-bottom:3px">🎯 ${l.focus}</div>`:''}
       <div style="font-size:12px;color:var(--text3);display:flex;gap:10px;flex-wrap:wrap">
