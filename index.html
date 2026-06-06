@@ -176,6 +176,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 .cal-log-item.type-레슨{border-left-color:var(--blue)}.cal-log-item.type-자체게임{border-left-color:var(--purple)}.cal-log-item.type-개인연습{border-left-color:var(--amber)}.cal-log-item.type-회복{border-left-color:var(--teal)}.cal-log-item.type-치료{border-left-color:#EF4444}.cal-log-item.type-대회기록{border-left-color:#DC2626}.cal-log-item.type-일정{border-left-color:#F97316}
 .mood-btn{padding:6px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:13px;font-family:inherit;transition:all 0.15s}
 .mood-btn.active{border-color:var(--green);background:var(--green-light)}
+.sort-btn{padding:5px 12px;border-radius:20px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:12px;font-family:inherit;color:var(--text2);transition:all 0.15s;white-space:nowrap}
+.sort-btn.active{background:var(--green);border-color:var(--green);color:#fff}
 .diary-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:14px;margin-bottom:10px;box-shadow:0 1px 5px rgba(29,158,117,0.07);cursor:pointer}
 .diary-body{font-size:13px;color:var(--text2);white-space:pre-wrap;word-break:break-word;margin-top:6px;line-height:1.7}
 </style>
@@ -312,6 +314,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
   </div>
   <div id="game-tab-players">
     <div class="section-header"><div style="font-size:14px;font-weight:600">상대방 목록</div><button class="btn btn-green btn-sm" onclick="openModal('modal-player')">+ 추가</button></div>
+    <!-- 정렬 버튼 -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="sort-btn active" onclick="setPlayerSort('fav',this)">⭐ 즐겨찾기</button>
+      <button class="sort-btn" onclick="setPlayerSort('club',this)">클럽별</button>
+      <button class="sort-btn" onclick="setPlayerSort('gender',this)">성별</button>
+      <button class="sort-btn" onclick="setPlayerSort('level-asc',this)">급수↑</button>
+      <button class="sort-btn" onclick="setPlayerSort('level-desc',this)">급수↓</button>
+      <button class="sort-btn" onclick="setPlayerSort('name',this)">이름순</button>
+    </div>
     <div id="player-list"></div>
   </div>
   <div id="game-tab-games" style="display:none">
@@ -595,7 +606,7 @@ let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[
 let routineDate = new Date().toISOString().split('T')[0];
 let ratings = { condition:0, focusRating:0 };
 let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
-let logFilter = '전체', ytFilter = '전체', currentGameTab = 'players';
+let logFilter = '전체', ytFilter = '전체', currentGameTab = 'players', playerSort = 'fav';
 let selectedCalDate = '';
 
 // ── 인증
@@ -1390,53 +1401,87 @@ window.togglePartnerField=()=>{
   document.getElementById('my-partner-group').style.display=isD?'block':'none';
   document.getElementById('opp2-group').style.display=isD?'block':'none';
 };
+// 정렬 버튼
+window.setPlayerSort = (type, btn) => {
+  playerSort = type;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPlayers();
+};
+
+// 즐겨찾기 토글
+window.toggleFav = async (id, e) => {
+  e.stopPropagation();
+  const p = state.players.find(p=>p.id===id); if(!p) return;
+  p.fav = !p.fav;
+  await updItem('players', id, {...p});
+  renderPlayers();
+  showToast(p.fav ? '⭐ 즐겨찾기 추가' : '즐겨찾기 해제');
+};
+
+function sortPlayers(list) {
+  const lo = {'S':0,'A':1,'B':2,'C':3,'D':4,'E':5};
+  const lv = p => lo[(p.level||'').trim().toUpperCase()[0]] ?? 9;
+  const go = {'남':0,'여':1};
+  const gv = p => go[p.gender] ?? 2;
+  const cp = (a,b) => (a.name||'').localeCompare(b.name||'','ko');
+  if(playerSort==='fav') return [...list].sort((a,b)=>{ if(!!b.fav!==!!a.fav) return b.fav?1:-1; return cp(a,b); });
+  if(playerSort==='club') return [...list].sort((a,b)=>{ const ca=a.club||'없음',cb=b.club||'없음'; return ca!==cb?ca.localeCompare(cb,'ko'):cp(a,b); });
+  if(playerSort==='gender') return [...list].sort((a,b)=>gv(a)!==gv(b)?gv(a)-gv(b):lv(a)-lv(b)||cp(a,b));
+  if(playerSort==='level-asc') return [...list].sort((a,b)=>lv(a)-lv(b)||gv(a)-gv(b)||cp(a,b));
+  if(playerSort==='level-desc') return [...list].sort((a,b)=>lv(b)-lv(a)||gv(a)-gv(b)||cp(a,b));
+  if(playerSort==='name') return [...list].sort(cp);
+  return list;
+}
+
 function renderPlayers() {
   if(!state.players.length){
     document.getElementById('player-list').innerHTML='<p class="empty-msg">상대방을 추가해주세요</p>';
     return;
   }
   const esc = s => (s||'').replace(/\n/g,' ').replace(/'/g,'&#39;').replace(/"/g,'&quot;').trim();
-  const levelOrder = {'S':0,'A':1,'B':2,'C':3,'D':4,'E':5};
-  const genderOrder = {'남':0,'여':1};
-
-  // 정렬: 성별 → 급수 → 이름
-  const sorted = [...state.players].sort((a,b)=>{
-    const ga=(genderOrder[a.gender]??2), gb=(genderOrder[b.gender]??2);
-    if(ga!==gb) return ga-gb;
-    const la=levelOrder[(a.level||'').toUpperCase().trim()[0]]??9;
-    const lb=levelOrder[(b.level||'').toUpperCase().trim()[0]]??9;
-    if(la!==lb) return la-lb;
-    return (a.name||'').localeCompare(b.name||'');
-  });
-
-  const winner = sorted.filter(p=>(p.club||'').replace(/\s/g,'').includes('위너'));
-  const others = sorted.filter(p=>!(p.club||'').replace(/\s/g,'').includes('위너'));
-
+  const sorted = sortPlayers(state.players);
   const cardHtml = p => {
-    const name=esc(p.name)||'이름 없음', level=esc(p.level), club=esc(p.club), feature=esc(p.feature), memo=esc(p.memo);
+    const name=esc(p.name)||'이름 없음', level=esc(p.level), feature=esc(p.feature);
     return `<div class="player-card" onclick="openEditPlayer('${p.id}')" style="cursor:pointer;margin-bottom:6px">
       <div style="display:flex;align-items:center;gap:6px">
-        <div style="flex:1">
+        <button onclick="toggleFav('${p.id}',event)" style="background:none;border:none;cursor:pointer;font-size:16px;padding:0;line-height:1;flex-shrink:0">${p.fav?'⭐':'☆'}</button>
+        <div style="flex:1;min-width:0">
           <span style="font-size:14px;font-weight:600">${name}</span>
           <span style="font-size:11px;color:var(--text3);margin-left:3px">${p.gender||''}</span>
           ${level?`<span class="level-badge" style="margin-left:3px;font-size:10px;padding:1px 6px">${level}</span>`:''}
         </div>
         <button class="del-btn" onclick="event.stopPropagation();deletePlayer('${p.id}')" style="font-size:14px;padding:2px">✕</button>
       </div>
-      ${feature?`<div style="font-size:11px;color:var(--text3);margin-top:3px">${feature}</div>`:''}
-      ${memo?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${memo}</div>`:''}
+      ${feature?`<div style="font-size:11px;color:var(--text3);margin-top:3px;padding-left:24px">${feature}</div>`:''}
     </div>`;
   };
 
-  document.getElementById('player-list').innerHTML = `
+  // 클럽별 정렬: 클럽 그룹핑
+  if(playerSort==='club') {
+    const clubs=[...new Set(sorted.map(p=>p.club||'기타'))];
+    document.getElementById('player-list').innerHTML=clubs.map(club=>{
+      const members=sorted.filter(p=>(p.club||'기타')===club);
+      return `<div style="margin-bottom:12px">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);background:var(--gray-light);border-radius:8px;padding:4px 10px;margin-bottom:6px">${club} (${members.length})</div>
+        ${members.map(cardHtml).join('')}
+      </div>`;
+    }).join('');
+    return;
+  }
+
+  // 나머지: 위너클럽 | 다른 클럽 2열
+  const winner=sorted.filter(p=>(p.club||'').replace(/\s/g,'').includes('위너'));
+  const others=sorted.filter(p=>!(p.club||'').replace(/\s/g,'').includes('위너'));
+  document.getElementById('player-list').innerHTML=`
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start">
       <div>
         <div style="font-size:11px;font-weight:700;color:var(--green-dark);background:var(--green-light);border-radius:8px;padding:5px 10px;margin-bottom:8px;text-align:center">🏸 위너클럽 (${winner.length})</div>
-        ${winner.length ? winner.map(cardHtml).join('') : '<p style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">없음</p>'}
+        ${winner.length?winner.map(cardHtml).join(''):'<p style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">없음</p>'}
       </div>
       <div>
         <div style="font-size:11px;font-weight:700;color:var(--text2);background:var(--gray-light);border-radius:8px;padding:5px 10px;margin-bottom:8px;text-align:center">👥 다른 클럽 (${others.length})</div>
-        ${others.length ? others.map(cardHtml).join('') : '<p style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">없음</p>'}
+        ${others.length?others.map(cardHtml).join(''):'<p style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">없음</p>'}
       </div>
     </div>`;
 }
