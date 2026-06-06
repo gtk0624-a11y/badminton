@@ -926,9 +926,9 @@ function renderRoutines() {
   cats.forEach(cat=>{
     const items=state.routines.filter(r=>r.category===cat);
     const done=items.filter(r=>r._done).length;
-    html+=`<div class="routine-cat-title"><span>${cat}</span><span style="font-weight:400;color:var(--text3)">${done}/${items.length}</span></div>`;
+    html+=`<div class="routine-cat-title" data-cat="${cat}"><span>${cat}</span><span style="font-weight:400;color:var(--text3)">${done}/${items.length}</span></div>`;
     html+=items.map(r=>`
-      <div class="routine-item${r._done?' done':''}" onclick="openEditRoutine('${r.id}')" style="cursor:pointer">
+      <div class="routine-item${r._done?' done':''}" data-rid="${r.id}" onclick="openEditRoutine('${r.id}')" style="cursor:pointer">
         <input type="checkbox" ${r._done?'checked':''} onclick="event.stopPropagation()" onchange="toggleRoutine('${r.id}',this.checked)">
         <span class="r-name">${r.name}</span>
         <span class="r-dur">${r.duration||''}${r.duration&&r.reps?' / ':''}${r.reps||''}</span>
@@ -997,23 +997,27 @@ window.saveRoutineLog = async () => {
   const total=state.routines.length;
   const checkedIds=state.routines.filter(r=>r._done).map(r=>r.id);
   const checkedNames=state.routines.filter(r=>r._done).map(r=>r.name);
-
-  // 이미 저장된 날짜면 덮어쓰기
   const existLog=state.routineLogs.find(l=>l.date===routineDate);
-  const memo=total?`${checkedNames.slice(0,3).join(', ')}${checkedNames.length>3?' 외 '+(checkedNames.length-3)+'개':''}`:'' ;
-  const data={date:routineDate,done,total,checkedIds,memo};
+  const memo=checkedNames.length?`${checkedNames.slice(0,3).join(', ')}${checkedNames.length>3?' 외 '+(checkedNames.length-3)+'개':''}`:'-';
+  const data={date:routineDate,done,total,checkedIds:[...checkedIds],memo};
 
-  if(existLog){
-    await updItem('routineLogs',existLog.id,{...data,id:existLog.id});
-    Object.assign(existLog,data);
-  } else {
-    const item=await addItem('routineLogs',data);
-    state.routineLogs.unshift(item);
-    state.routineLogs.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  try {
+    if(existLog){
+      // Firestore 직접 업데이트 (배열 포함)
+      await updateDoc(doc(db,'users',currentUser.uid,'routineLogs',existLog.id), {...data});
+      Object.assign(existLog,data);
+    } else {
+      const item=await addItem('routineLogs',data);
+      state.routineLogs.unshift(item);
+      state.routineLogs.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    }
+    renderRoutines();
+    renderCalendar();
+    showToast(`루틴 저장 완료 (${done}/${total})`);
+  } catch(e) {
+    console.error(e);
+    showToast('저장 실패: '+e.message);
   }
-  renderRoutines();
-  renderCalendar();
-  showToast(`${routineDate} 루틴 저장 완료 (${done}/${total})`);
 };
 
 window.deleteRoutineLog=async id=>{
@@ -1023,7 +1027,30 @@ window.deleteRoutineLog=async id=>{
   renderRoutines();renderCalendar();showToast('삭제');
 };
 
-window.toggleRoutine=(id,val)=>{const r=state.routines.find(r=>r.id===id);if(r){r._done=val;renderRoutines();}};
+window.toggleRoutine=(id,val)=>{
+  const r=state.routines.find(r=>r.id===id);
+  if(!r)return;
+  r._done=val;
+  // 전체 재렌더 대신 해당 항목 DOM만 업데이트
+  const item=document.querySelector(`.routine-item[data-rid="${id}"]`);
+  if(item){
+    if(val) item.classList.add('done'); else item.classList.remove('done');
+  }
+  // 카운트만 업데이트
+  const cats=['준비운동','메인훈련','일상연습','마무리'];
+  cats.forEach(cat=>{
+    const items=state.routines.filter(r=>r.category===cat);
+    const done=items.filter(r=>r._done).length;
+    const titleEl=document.querySelector(`.routine-cat-title[data-cat="${cat}"] span:last-child`);
+    if(titleEl) titleEl.textContent=`${done}/${items.length}`;
+  });
+  // 상태 표시 업데이트
+  const total=state.routines.length;
+  const done=state.routines.filter(r=>r._done).length;
+  const statusEl=document.getElementById('routine-date-status');
+  const existLog=state.routineLogs.find(l=>l.date===routineDate);
+  if(statusEl&&!existLog) statusEl.innerHTML=`<span style="color:var(--text3)">현재 ${done}/${total} 체크됨 · 저장 버튼으로 기록하세요</span>`;
+};
 window.saveRoutine=async()=>{
   const data={category:document.getElementById('routine-cat').value,name:document.getElementById('routine-name').value.trim(),duration:document.getElementById('routine-dur').value.trim(),reps:document.getElementById('routine-reps').value.trim(),order:99};
   if(!data.name){showToast('이름을 입력하세요');return;}
@@ -1125,18 +1152,18 @@ window.openCalDetail = ds => {
     </div>`;
   }
   dayEvs.forEach(e=>{
-    html+=`<div class="cal-log-item type-일정">
+    html+=`<div class="cal-log-item type-일정" style="cursor:pointer" onclick="openEditEvent('${e.id}')">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
         <span class="badge badge-${e.type}">${e.type}</span>
-        <button class="del-btn" onclick="deleteEvent('${e.id}');document.getElementById('cal-detail-overlay').classList.remove('open')">✕</button>
+        <button class="del-btn" onclick="event.stopPropagation();deleteEvent('${e.id}');document.getElementById('cal-detail-overlay').classList.remove('open')">✕</button>
       </div>
       <div style="font-size:14px;font-weight:600">${e.title}</div>
       ${e.memo?`<div style="font-size:12px;color:var(--text3);margin-top:3px">${e.memo}</div>`:''}
     </div>`;
   });
   dayTourneys.forEach(t=>{
-    html+=`<div class="cal-log-item type-대회기록">
-      <div style="font-size:11px;font-weight:600;color:#DC2626;margin-bottom:4px">🏆 대회기록</div>
+    html+=`<div class="cal-log-item type-대회기록" style="cursor:pointer" onclick="openEditTourney('${t.id}');document.getElementById('cal-detail-overlay').classList.remove('open')">
+      <div style="font-size:11px;font-weight:600;color:#DC2626;margin-bottom:4px">🏆 대회기록 (탭해서 수정)</div>
       <div style="font-size:14px;font-weight:600">${t.name||'대회'}</div>
       <div style="font-size:12px;color:var(--text3);margin-top:2px">${t.place||''}${t.rank?' · '+t.rank:''}</div>
     </div>`;
@@ -1170,13 +1197,34 @@ window.openEventFromCal = () => {
   document.getElementById('cal-detail-overlay').classList.remove('open');
   document.getElementById('ev-date').value=selectedCalDate;
   document.getElementById('ev-title').value='';document.getElementById('ev-memo').value='';
+  const hiddenEl=document.getElementById('ev-edit-id');if(hiddenEl)hiddenEl.value='';
   openModal('modal-event');
 };
 window.saveEvent=async()=>{
+  const editId=document.getElementById('ev-edit-id')?document.getElementById('ev-edit-id').value:'';
   const data={date:document.getElementById('ev-date').value,type:document.getElementById('ev-type').value,title:document.getElementById('ev-title').value.trim(),memo:document.getElementById('ev-memo').value};
   if(!data.date||!data.title){showToast('날짜와 제목 필요');return;}
-  const item=await addItem('events',data);state.events.push(item);
-  closeModal('modal-event');renderCalendar();renderHome();showToast('저장');
+  if(editId){
+    data.id=editId;
+    await updItem('events',editId,data);
+    const e=state.events.find(e=>e.id===editId);if(e)Object.assign(e,data);
+  } else {
+    const item=await addItem('events',data);state.events.push(item);
+  }
+  closeModal('modal-event');renderCalendar();renderHome();showToast(editId?'수정':'저장');
+};
+window.openEditEvent=id=>{
+  const e=state.events.find(e=>e.id===id);if(!e)return;
+  document.getElementById('cal-detail-overlay').classList.remove('open');
+  document.getElementById('ev-date').value=e.date||'';
+  document.getElementById('ev-type').value=e.type||'훈련';
+  document.getElementById('ev-title').value=e.title||'';
+  document.getElementById('ev-memo').value=e.memo||'';
+  // editId hidden input이 없으면 동적 추가
+  let hiddenEl=document.getElementById('ev-edit-id');
+  if(!hiddenEl){hiddenEl=document.createElement('input');hiddenEl.type='hidden';hiddenEl.id='ev-edit-id';document.getElementById('modal-event').querySelector('.modal').prepend(hiddenEl);}
+  hiddenEl.value=e.id;
+  openModal('modal-event');
 };
 window.deleteEvent=async id=>{
   if(!confirm('삭제?'))return;await delItem('events',id);state.events=state.events.filter(e=>e.id!==id);
