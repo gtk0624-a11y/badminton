@@ -99,7 +99,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 .cal-num{font-size:11px;font-weight:500;margin-bottom:2px}
 .cal-dots{display:flex;flex-wrap:wrap;gap:2px}
 .cal-dot{width:5px;height:5px;border-radius:50%}
-.dot-훈련{background:var(--green)}.dot-레슨{background:var(--blue)}.dot-자체게임{background:var(--purple)}.dot-개인연습{background:var(--amber)}.dot-회복{background:var(--teal)}.dot-치료{background:#EF4444}.dot-기타{background:var(--gray)}.dot-대회기록{background:#DC2626}.dot-일정{background:#F97316}
+.dot-훈련{background:var(--green)}.dot-레슨{background:var(--blue)}.dot-자체게임{background:var(--purple)}.dot-개인연습{background:var(--amber)}.dot-회복{background:var(--teal)}.dot-치료{background:#EF4444}.dot-기타{background:var(--gray)}.dot-대회기록{background:#DC2626}.dot-일정{background:#F97316}.dot-루틴{background:#059669}
 .routine-cat-title{font-size:12px;font-weight:600;color:var(--text3);letter-spacing:.05em;margin:14px 0 6px;display:flex;align-items:center;justify-content:space-between}
 .routine-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);margin-bottom:6px}
 .routine-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--green);cursor:pointer;flex-shrink:0}
@@ -232,7 +232,28 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 <!-- 루틴 -->
 <div id="page-routine" class="page">
   <div class="page-banner"><div class="page-banner-title">✅ 훈련 루틴</div><button class="btn btn-white btn-sm" onclick="openModal('modal-routine')">+ 추가</button></div>
+
+  <!-- 날짜 선택 + 저장 -->
+  <div style="background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:600;color:var(--text2)">📅 날짜</span>
+      <input type="date" id="routine-date-picker" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit" onchange="onRoutineDateChange(this.value)">
+      <button class="btn btn-outline btn-sm" onclick="onRoutineDateChange(new Date().toISOString().split('T')[0])">오늘</button>
+    </div>
+    <div id="routine-date-status" style="font-size:12px;color:var(--text3);margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green btn-sm" style="flex:1" onclick="saveRoutineLog()">✅ 이 날 루틴 기록 저장</button>
+      <button class="btn btn-outline btn-sm" onclick="resetRoutineChecks()">초기화</button>
+    </div>
+  </div>
+
   <div id="routine-list"></div>
+
+  <!-- 과거 루틴 기록 -->
+  <div style="margin-top:16px">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--text2)">📋 루틴 기록 히스토리</div>
+    <div id="routine-log-history"></div>
+  </div>
 </div>
 
 <!-- 캘린더 -->
@@ -567,7 +588,8 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
-let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[], tourneys:[] };
+let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[], tourneys:[], routineLogs:[] };
+let routineDate = new Date().toISOString().split('T')[0];
 let ratings = { condition:0, focusRating:0 };
 let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
 let logFilter = '전체', ytFilter = '전체', currentGameTab = 'players';
@@ -608,9 +630,9 @@ async function loadAll() {
   document.getElementById('game-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('t-date').value = new Date().toISOString().split('T')[0];
   try {
-    const [logs,routines,events,youtube,memos,equipment,players,games,tourneys] = await Promise.all([
+    const [logs,routines,events,youtube,memos,equipment,players,games,tourneys,routineLogs] = await Promise.all([
       getAll('logs'), getAll('routines'), getAll('events'), getAll('youtube'),
-      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'), getAll('tourneys'),
+      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'), getAll('tourneys'), getAll('routineLogs'),
     ]);
     state.logs = logs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
     state.routines = routines;
@@ -622,6 +644,7 @@ async function loadAll() {
     state.players = players;
     state.games = games.sort((a,b) => (b.date||'').localeCompare(a.date||''));
     state.tourneys = tourneys.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    state.routineLogs = routineLogs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
   } catch(e) { console.error(e); }
   document.getElementById('loading').style.display = 'none';
   renderAll();
@@ -659,6 +682,11 @@ window.showPage = (id, btn) => {
   btn.classList.add('active');
   if(id==='stats') renderStats();
   if(id==='game' && currentGameTab==='winrate') renderWinrate();
+  if(id==='routine'){
+    const dp=document.getElementById('routine-date-picker');
+    if(dp) dp.value=routineDate;
+    renderRoutines();
+  }
   history.pushState(null, null, location.href);
 };
 window.openModal = id => { document.getElementById(id).classList.add('open'); history.pushState(null, null, location.href); };
@@ -789,6 +817,17 @@ window.deleteLog = async id => {
 
 // ── 루틴
 function renderRoutines() {
+  // 날짜 피커 초기화
+  const dp = document.getElementById('routine-date-picker');
+  if(dp && !dp.value) dp.value = routineDate;
+
+  // 해당 날짜 기존 기록 체크
+  const existLog = state.routineLogs.find(l=>l.date===routineDate);
+  const checkedIds = existLog ? (existLog.checkedIds||[]) : [];
+
+  // 체크 상태 반영
+  state.routines.forEach(r => { r._done = checkedIds.includes(r.id); });
+
   const cats=['준비운동','메인훈련','일상연습','마무리'];
   let html='';
   cats.forEach(cat=>{
@@ -796,16 +835,101 @@ function renderRoutines() {
     const done=items.filter(r=>r._done).length;
     html+=`<div class="routine-cat-title"><span>${cat}</span><span style="font-weight:400;color:var(--text3)">${done}/${items.length}</span></div>`;
     html+=items.map(r=>`
-      <div class="routine-item${r._done?' done':''}">
-        <input type="checkbox" ${r._done?'checked':''} onchange="toggleRoutine('${r.id}',this.checked)">
+      <div class="routine-item${r._done?' done':''}" onclick="openEditRoutine('${r.id}')" style="cursor:pointer">
+        <input type="checkbox" ${r._done?'checked':''} onclick="event.stopPropagation()" onchange="toggleRoutine('${r.id}',this.checked)">
         <span class="r-name">${r.name}</span>
         <span class="r-dur">${r.duration||''}${r.duration&&r.reps?' / ':''}${r.reps||''}</span>
-        <button class="edit-btn" onclick="openEditRoutine('${r.id}')">✎</button>
-        <button class="del-btn" onclick="deleteRoutine('${r.id}')">✕</button>
+        <button class="del-btn" onclick="event.stopPropagation();deleteRoutine('${r.id}')">✕</button>
       </div>`).join('');
   });
   document.getElementById('routine-list').innerHTML=html;
+
+  // 날짜 상태 표시
+  const total=state.routines.length;
+  const done=state.routines.filter(r=>r._done).length;
+  const statusEl=document.getElementById('routine-date-status');
+  if(statusEl){
+    if(existLog){
+      statusEl.innerHTML=`<span style="color:var(--green);font-weight:600">✅ 저장된 기록 있음</span> · ${existLog.done}/${existLog.total} 완료 · ${existLog.memo?'메모: '+existLog.memo:''}`;
+    } else {
+      statusEl.innerHTML=`<span style="color:var(--text3)">현재 ${done}/${total} 체크됨 · 저장 버튼으로 기록하세요</span>`;
+    }
+  }
+
+  renderRoutineHistory();
 }
+
+function renderRoutineHistory() {
+  const el=document.getElementById('routine-log-history');
+  if(!el)return;
+  const list=state.routineLogs.slice(0,20);
+  if(!list.length){el.innerHTML='<p class="empty-msg">루틴 기록이 없습니다</p>';return;}
+  el.innerHTML=list.map(l=>{
+    const pct=l.total?Math.round(l.done/l.total*100):0;
+    const color=pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)';
+    return`<div class="card" style="cursor:pointer" onclick="loadRoutineLog('${l.date}')">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:600;flex:1">${l.date}</span>
+        <span style="font-size:14px;font-weight:700;color:${color}">${pct}%</span>
+        <button class="del-btn" onclick="event.stopPropagation();deleteRoutineLog('${l.id}')">✕</button>
+      </div>
+      <div style="background:var(--gray-light);border-radius:4px;height:6px;overflow:hidden;margin-bottom:4px">
+        <div style="height:6px;border-radius:4px;background:${color};width:${pct}%"></div>
+      </div>
+      <div style="font-size:12px;color:var(--text3)">${l.done}/${l.total} 완료${l.memo?' · '+l.memo:''}</div>
+    </div>`;
+  }).join('');
+}
+
+window.onRoutineDateChange = ds => {
+  routineDate = ds;
+  document.getElementById('routine-date-picker').value=ds;
+  renderRoutines();
+};
+
+window.loadRoutineLog = ds => {
+  routineDate=ds;
+  document.getElementById('routine-date-picker').value=ds;
+  renderRoutines();
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+
+window.resetRoutineChecks = () => {
+  state.routines.forEach(r=>r._done=false);
+  renderRoutines();
+};
+
+window.saveRoutineLog = async () => {
+  const done=state.routines.filter(r=>r._done).length;
+  const total=state.routines.length;
+  const checkedIds=state.routines.filter(r=>r._done).map(r=>r.id);
+  const checkedNames=state.routines.filter(r=>r._done).map(r=>r.name);
+
+  // 이미 저장된 날짜면 덮어쓰기
+  const existLog=state.routineLogs.find(l=>l.date===routineDate);
+  const memo=total?`${checkedNames.slice(0,3).join(', ')}${checkedNames.length>3?' 외 '+(checkedNames.length-3)+'개':''}`:'' ;
+  const data={date:routineDate,done,total,checkedIds,memo};
+
+  if(existLog){
+    await updItem('routineLogs',existLog.id,{...data,id:existLog.id});
+    Object.assign(existLog,data);
+  } else {
+    const item=await addItem('routineLogs',data);
+    state.routineLogs.unshift(item);
+    state.routineLogs.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  }
+  renderRoutines();
+  renderCalendar();
+  showToast(`${routineDate} 루틴 저장 완료 (${done}/${total})`);
+};
+
+window.deleteRoutineLog=async id=>{
+  if(!confirm('루틴 기록을 삭제할까요?'))return;
+  await delItem('routineLogs',id);
+  state.routineLogs=state.routineLogs.filter(l=>l.id!==id);
+  renderRoutines();renderCalendar();showToast('삭제');
+};
+
 window.toggleRoutine=(id,val)=>{const r=state.routines.find(r=>r.id===id);if(r){r._done=val;renderRoutines();}};
 window.saveRoutine=async()=>{
   const data={category:document.getElementById('routine-cat').value,name:document.getElementById('routine-name').value.trim(),duration:document.getElementById('routine-dur').value.trim(),reps:document.getElementById('routine-reps').value.trim(),order:99};
@@ -846,11 +970,13 @@ function renderCalendar() {
     const dayLogs=state.logs.filter(l=>l.date===ds);
     const dayEvs=state.events.filter(e=>e.date===ds);
     const dayTourneys=state.tourneys.filter(t=>t.date===ds);
-    const hasData=dayLogs.length||dayEvs.length||dayTourneys.length;
+    const dayRoutineLog=state.routineLogs.find(l=>l.date===ds);
+    const hasData=dayLogs.length||dayEvs.length||dayTourneys.length||dayRoutineLog;
     const dots=[
       ...dayLogs.map(l=>`<div class="cal-dot dot-${l.type}"></div>`),
       ...dayEvs.map(()=>`<div class="cal-dot dot-일정"></div>`),
       ...dayTourneys.map(()=>`<div class="cal-dot dot-대회기록"></div>`),
+      ...(dayRoutineLog?[`<div class="cal-dot dot-루틴" title="루틴 ${dayRoutineLog.done}/${dayRoutineLog.total}"></div>`]:[]),
     ].join('');
     html+=`<div class="cal-cell${isT?' today':''}${hasData?' has-data':''}" onclick="openCalDetail('${ds}')">
       <div class="cal-num">${d}</div><div class="cal-dots">${dots}</div></div>`;
@@ -885,8 +1011,26 @@ window.openCalDetail = ds => {
   const dayLogs=state.logs.filter(l=>l.date===ds);
   const dayEvs=state.events.filter(e=>e.date===ds);
   const dayTourneys=state.tourneys.filter(t=>t.date===ds);
+  const dayRoutineLog=state.routineLogs.find(l=>l.date===ds);
   let html='';
-  if(!dayLogs.length&&!dayEvs.length&&!dayTourneys.length){ html='<p class="empty-msg" style="padding:12px 0">이 날의 기록이 없습니다</p>'; }
+  if(!dayLogs.length&&!dayEvs.length&&!dayTourneys.length&&!dayRoutineLog){ html='<p class="empty-msg" style="padding:12px 0">이 날의 기록이 없습니다</p>'; }
+
+  // 루틴 기록
+  if(dayRoutineLog){
+    const pct=dayRoutineLog.total?Math.round(dayRoutineLog.done/dayRoutineLog.total*100):0;
+    const color=pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)';
+    html+=`<div class="cal-log-item" style="border-left-color:#059669;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:600;color:#059669;margin-bottom:6px">✅ 루틴 기록</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <div style="flex:1;background:var(--gray-light);border-radius:4px;height:8px;overflow:hidden">
+          <div style="height:8px;border-radius:4px;background:${color};width:${pct}%"></div>
+        </div>
+        <span style="font-size:14px;font-weight:700;color:${color}">${pct}%</span>
+      </div>
+      <div style="font-size:12px;color:var(--text3)">${dayRoutineLog.done}/${dayRoutineLog.total} 완료${dayRoutineLog.memo?' · '+dayRoutineLog.memo:''}</div>
+      <button class="btn btn-outline btn-sm" style="margin-top:8px;font-size:11px" onclick="loadRoutineLog('${ds}');document.getElementById('cal-detail-overlay').classList.remove('open')">루틴 탭에서 보기</button>
+    </div>`;
+  }
   dayEvs.forEach(e=>{
     html+=`<div class="cal-log-item type-일정">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
@@ -976,23 +1120,39 @@ function renderStats() {
 window.filterYoutube=(cat,btn)=>{ytFilter=cat;document.querySelectorAll('#page-youtube .filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderYoutube();};
 function renderYoutube() {
   const list=ytFilter==='전체'?state.youtube:state.youtube.filter(v=>v.category===ytFilter);
-  document.getElementById('youtube-list').innerHTML=list.length?list.map(v=>`<div class="yt-card">
+  document.getElementById('youtube-list').innerHTML=list.length?list.map(v=>`<div class="yt-card" onclick="openEditYoutube('${v.id}')" style="cursor:pointer">
     ${v.thumbnail?`<img class="yt-thumb" src="${v.thumbnail}" alt="" onerror="this.style.display='none'">`:`<div class="yt-thumb-ph"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ccc" stroke-width="1.5"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>`}
-    <div class="yt-info"><div class="yt-title"><a href="${v.url}" target="_blank" style="color:var(--text);text-decoration:none">${v.title||v.url}</a></div>
+    <div class="yt-info"><div class="yt-title">${v.title||v.url}</div>
     <div class="yt-meta" style="margin-top:4px"><span class="badge" style="background:var(--blue-light);color:#185FA5;font-size:10px">${v.category||'기타'}</span>${v.memo?' · '+v.memo:''}</div>
     <div class="yt-meta">${v.addedAt||''}</div></div>
-    <button class="del-btn" onclick="deleteYoutube('${v.id}')">✕</button></div>`).join(''):'<p class="empty-msg">영상이 없습니다</p>';
+    <div style="display:flex;flex-direction:column;gap:4px;flex-shrink:0">
+      <a href="${v.url}" target="_blank" onclick="event.stopPropagation()" style="background:var(--blue-light);border:none;border-radius:6px;padding:5px 8px;font-size:11px;color:#185FA5;text-decoration:none;text-align:center">▶ 보기</a>
+      <button class="del-btn" onclick="event.stopPropagation();deleteYoutube('${v.id}')">✕</button>
+    </div></div>`).join(''):'<p class="empty-msg">영상이 없습니다</p>';
 }
 window.saveYoutube=async()=>{
   const url=document.getElementById('yt-url').value.trim();
   if(!url){showToast('URL을 입력하세요');return;}
+  const editId=document.getElementById('yt-url').dataset.editId||'';
   const videoId=url.match(/youtu\.be\/([^?&]+)/)?.[1]||url.match(/youtube\.com\/watch\?v=([^&]+)/)?.[1]||url.match(/youtube\.com\/shorts\/([^?&]+)/)?.[1]||'';
   const data={url,title:document.getElementById('yt-title').value.trim()||url,category:document.getElementById('yt-category').value,memo:document.getElementById('yt-memo').value,thumbnail:videoId?`https://img.youtube.com/vi/${videoId}/mqdefault.jpg`:'',addedAt:new Date().toISOString().split('T')[0]};
-  const item=await addItem('youtube',data);state.youtube.unshift(item);
+  if(editId){data.id=editId;await updItem('youtube',editId,data);const v=state.youtube.find(v=>v.id===editId);if(v)Object.assign(v,data);}
+  else{const item=await addItem('youtube',data);state.youtube.unshift(item);}
   closeModal('modal-youtube');['yt-url','yt-title','yt-memo'].forEach(id=>document.getElementById(id).value='');
-  renderYoutube();showToast('저장');
+  document.getElementById('yt-url').dataset.editId='';
+  renderYoutube();showToast(editId?'수정':'저장');
 };
 window.deleteYoutube=async id=>{if(!confirm('삭제?'))return;await delItem('youtube',id);state.youtube=state.youtube.filter(v=>v.id!==id);renderYoutube();showToast('삭제');};
+window.openEditYoutube=id=>{
+  const v=state.youtube.find(v=>v.id===id);if(!v)return;
+  document.getElementById('yt-url').value=v.url||'';
+  document.getElementById('yt-title').value=v.title||'';
+  document.getElementById('yt-category').value=v.category||'기타';
+  document.getElementById('yt-memo').value=v.memo||'';
+  // 수정 모드 표시 (저장 시 업데이트)
+  document.getElementById('yt-url').dataset.editId=v.id;
+  openModal('modal-youtube');
+};
 
 // ── 장비/메모
 window.switchMemoTab=(tab,btn)=>{
@@ -1005,10 +1165,10 @@ function renderEquipment() {
   cats.forEach(cat=>{
     const items=state.equipment.filter(e=>e.category===cat);if(!items.length)return;
     html+=`<div class="equip-cat-title">${cat}</div>`;
-    html+=items.map(e=>`<div class="card">
+    html+=items.map(e=>`<div class="card" onclick="openEditEquipment('${e.id}')" style="cursor:pointer">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
         <span style="font-size:14px;font-weight:600">${e.brand||''}</span><span style="font-size:13px;color:var(--text2)">${e.model||''}</span>
-        <div style="flex:1"></div><button class="edit-btn" onclick="openEditEquipment('${e.id}')">✎</button><button class="del-btn" onclick="deleteEquipment('${e.id}')">✕</button>
+        <div style="flex:1"></div><button class="del-btn" onclick="event.stopPropagation();deleteEquipment('${e.id}')">✕</button>
       </div>
       ${e.detail?`<div style="font-size:12px;color:var(--text3)">${e.detail}</div>`:''}
       ${e.purchaseDate?`<div style="font-size:12px;color:var(--text3)">구매: ${e.purchaseDate}</div>`:''}
@@ -1035,12 +1195,11 @@ window.openEditEquipment=id=>{
 };
 window.deleteEquipment=async id=>{if(!confirm('삭제?'))return;await delItem('equipment',id);state.equipment=state.equipment.filter(e=>e.id!==id);renderEquipment();showToast('삭제');};
 function renderMemos() {
-  document.getElementById('memo-list').innerHTML=state.memos.length?state.memos.map(m=>`<div class="card">
+  document.getElementById('memo-list').innerHTML=state.memos.length?state.memos.map(m=>`<div class="card" onclick="openEditMemo('${m.id}')" style="cursor:pointer">
     <div style="display:flex;align-items:center;gap:8px">
       <span class="badge" style="background:var(--gray-light);color:var(--gray)">${m.category||'일반'}</span>
       <span style="font-size:14px;font-weight:500;flex:1">${m.title||''}</span>
-      <button class="edit-btn" onclick="openEditMemo('${m.id}')">✎</button>
-      <button class="del-btn" onclick="deleteMemo('${m.id}')">✕</button>
+      <button class="del-btn" onclick="event.stopPropagation();deleteMemo('${m.id}')">✕</button>
     </div>
     <div class="memo-content">${m.content||''}</div>
     <div style="font-size:11px;color:var(--text3);margin-top:6px">${m.updatedAt||''}</div>
@@ -1083,13 +1242,12 @@ window.togglePartnerField=()=>{
   document.getElementById('opp2-group').style.display=isD?'block':'none';
 };
 function renderPlayers() {
-  document.getElementById('player-list').innerHTML=state.players.length?state.players.map(p=>`<div class="player-card">
+  document.getElementById('player-list').innerHTML=state.players.length?state.players.map(p=>`<div class="player-card" onclick="openEditPlayer('${p.id}')" style="cursor:pointer">
     <div style="display:flex;align-items:center;gap:8px">
       <div style="flex:1"><span style="font-size:15px;font-weight:600">${p.name}</span> <span style="font-size:12px;color:var(--text3)">${p.gender||''}</span>
         ${p.level?`<span class="level-badge" style="margin-left:4px">${p.level}</span>`:''}
       </div>
-      <button class="edit-btn" onclick="openEditPlayer('${p.id}')">✎</button>
-      <button class="del-btn" onclick="deletePlayer('${p.id}')">✕</button>
+      <button class="del-btn" onclick="event.stopPropagation();deletePlayer('${p.id}')">✕</button>
     </div>
     <div style="font-size:12px;color:var(--text3);margin-top:4px">${p.club?'🏢 '+p.club:''}${p.feature?' · '+p.feature:''}</div>
     ${p.memo?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${p.memo}</div>`:''}
@@ -1122,12 +1280,11 @@ function renderGames() {
     if(g.myScore1!=null&&g.myScore1!==''&&g.oppScore1!=null&&g.oppScore1!=='')sets.push(`${g.myScore1}:${g.oppScore1}`);
     if(g.myScore2!=null&&g.myScore2!==''&&g.oppScore2!=null&&g.oppScore2!=='')sets.push(`${g.myScore2}:${g.oppScore2}`);
     if(g.myScore3!=null&&g.myScore3!==''&&g.oppScore3!=null&&g.oppScore3!=='')sets.push(`${g.myScore3}:${g.oppScore3}`);
-    return`<div class="game-card">
+    return`<div class="game-card" onclick="openEditGame('${g.id}')" style="cursor:pointer">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span class="badge badge-${g.result==='승'?'승':'패'}">${g.result||'-'}</span>
         <span style="font-size:13px;font-weight:500;flex:1">${g.date} · ${g.matchType||'단식'}</span>
-        <button class="edit-btn" onclick="openEditGame('${g.id}')">✎</button>
-        <button class="del-btn" onclick="deleteGame('${g.id}')">✕</button>
+        <button class="del-btn" onclick="event.stopPropagation();deleteGame('${g.id}')">✕</button>
       </div>
       <div style="font-size:13px;color:var(--text2);margin-bottom:4px">
         ${mp?`<span style="color:var(--green-dark);font-weight:500">👤 ${mp.name}</span> + 나 vs `:'vs '}
@@ -1275,7 +1432,7 @@ function renderTourneys() {
     const rankShort=t.rank?t.rank.replace('🥇','🥇').replace('🥈','🥈').replace('🥉','🥉'):'-';
     const wins=t.bracket?t.bracket.filter(r=>r.result==='승').length:0;
     const loses=t.bracket?t.bracket.filter(r=>r.result==='패').length:0;
-    return`<div class="tourney-card">
+    return`<div class="tourney-card" onclick="openEditTourney('${t.id}')" style="cursor:pointer">
       <div class="tourney-header">
         <div class="tourney-badge" style="background:linear-gradient(135deg,${rc}AA,${rc})">
           <div class="t-rank" style="font-size:${t.rank&&t.rank.length>4?12:16}px">${rankShort||'?'}</div>
@@ -1289,8 +1446,7 @@ function renderTourneys() {
             <span style="color:var(--text3);margin-left:4px">(${t.bracket.length}경기)</span>
           </div>`:''}
         </div>
-        <button class="edit-btn" onclick="openEditTourney('${t.id}')">✎</button>
-        <button class="del-btn" onclick="deleteTourney('${t.id}')">✕</button>
+        <button class="del-btn" onclick="event.stopPropagation();deleteTourney('${t.id}')">✕</button>
       </div>
       ${t.bracket&&t.bracket.length?`<div class="bracket-grid">
         ${t.bracket.map(r=>`<div class="bracket-round">
