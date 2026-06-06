@@ -1391,32 +1391,54 @@ window.togglePartnerField=()=>{
   document.getElementById('opp2-group').style.display=isD?'block':'none';
 };
 function renderPlayers() {
-  console.log('renderPlayers 호출, 데이터 수:', state.players.length, state.players);
   if(!state.players.length){
     document.getElementById('player-list').innerHTML='<p class="empty-msg">상대방을 추가해주세요</p>';
     return;
   }
   const esc = s => (s||'').replace(/\n/g,' ').replace(/'/g,'&#39;').replace(/"/g,'&quot;').trim();
-  const html = state.players.map(p => {
-    const name = esc(p.name) || '이름 없음';
-    const level = esc(p.level);
-    const club = esc(p.club);
-    const feature = esc(p.feature);
-    const memo = esc(p.memo);
-    return `<div class="player-card" onclick="openEditPlayer('${p.id}')" style="cursor:pointer">
-      <div style="display:flex;align-items:center;gap:8px">
+  const levelOrder = {'S':0,'A':1,'B':2,'C':3,'D':4,'E':5};
+  const genderOrder = {'남':0,'여':1};
+
+  // 정렬: 성별 → 급수 → 이름
+  const sorted = [...state.players].sort((a,b)=>{
+    const ga=(genderOrder[a.gender]??2), gb=(genderOrder[b.gender]??2);
+    if(ga!==gb) return ga-gb;
+    const la=levelOrder[(a.level||'').toUpperCase().trim()[0]]??9;
+    const lb=levelOrder[(b.level||'').toUpperCase().trim()[0]]??9;
+    if(la!==lb) return la-lb;
+    return (a.name||'').localeCompare(b.name||'');
+  });
+
+  const winner = sorted.filter(p=>(p.club||'').replace(/\s/g,'').includes('위너'));
+  const others = sorted.filter(p=>!(p.club||'').replace(/\s/g,'').includes('위너'));
+
+  const cardHtml = p => {
+    const name=esc(p.name)||'이름 없음', level=esc(p.level), club=esc(p.club), feature=esc(p.feature), memo=esc(p.memo);
+    return `<div class="player-card" onclick="openEditPlayer('${p.id}')" style="cursor:pointer;margin-bottom:6px">
+      <div style="display:flex;align-items:center;gap:6px">
         <div style="flex:1">
-          <span style="font-size:15px;font-weight:600">${name}</span>
-          <span style="font-size:12px;color:var(--text3);margin-left:4px">${p.gender||''}</span>
-          ${level?`<span class="level-badge" style="margin-left:4px">${level}</span>`:''}
+          <span style="font-size:14px;font-weight:600">${name}</span>
+          <span style="font-size:11px;color:var(--text3);margin-left:3px">${p.gender||''}</span>
+          ${level?`<span class="level-badge" style="margin-left:3px;font-size:10px;padding:1px 6px">${level}</span>`:''}
         </div>
-        <button class="del-btn" onclick="event.stopPropagation();deletePlayer('${p.id}')">✕</button>
+        <button class="del-btn" onclick="event.stopPropagation();deletePlayer('${p.id}')" style="font-size:14px;padding:2px">✕</button>
       </div>
-      ${club||feature?`<div style="font-size:12px;color:var(--text3);margin-top:4px">${club?'🏢 '+club:''}${club&&feature?' · ':''}${feature}</div>`:''}
-      ${memo?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${memo}</div>`:''}
+      ${feature?`<div style="font-size:11px;color:var(--text3);margin-top:3px">${feature}</div>`:''}
+      ${memo?`<div style="font-size:11px;color:var(--text3);margin-top:1px">${memo}</div>`:''}
     </div>`;
-  }).join('');
-  document.getElementById('player-list').innerHTML = html;
+  };
+
+  document.getElementById('player-list').innerHTML = `
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:start">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--green-dark);background:var(--green-light);border-radius:8px;padding:5px 10px;margin-bottom:8px;text-align:center">🏸 위너클럽 (${winner.length})</div>
+        ${winner.length ? winner.map(cardHtml).join('') : '<p style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">없음</p>'}
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text2);background:var(--gray-light);border-radius:8px;padding:5px 10px;margin-bottom:8px;text-align:center">👥 다른 클럽 (${others.length})</div>
+        ${others.length ? others.map(cardHtml).join('') : '<p style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">없음</p>'}
+      </div>
+    </div>`;
 }
 window.savePlayer=async()=>{
   const id=document.getElementById('player-edit-id').value;
