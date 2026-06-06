@@ -1474,6 +1474,7 @@ function renderPlayers() {
         ${members.map(cardHtml).join('')}
       </div>`;
     }).join('');
+    populatePlayerSelects();
     return;
   }
 
@@ -1491,6 +1492,7 @@ function renderPlayers() {
         ${others.length?others.map(cardHtml).join(''):'<p style="font-size:12px;color:var(--text3);text-align:center;padding:12px 0">없음</p>'}
       </div>
     </div>`;
+  populatePlayerSelects();
 }
 window.savePlayer=async()=>{
   const id=document.getElementById('player-edit-id').value;
