@@ -639,7 +639,6 @@ async function loadAll() {
     ]);
     state.logs = logs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
     state.routines = routines;
-    if(!state.routines.length) await initDefaultRoutines();
     state.events = events;
     state.youtube = youtube.sort((a,b) => (b.addedAt||'').localeCompare(a.addedAt||''));
     state.memos = memos;
@@ -649,9 +648,16 @@ async function loadAll() {
     state.tourneys = tourneys.sort((a,b) => (b.date||'').localeCompare(a.date||''));
     state.routineLogs = routineLogs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
     state.diaries = diaries.sort((a,b) => (b.date||'').localeCompare(a.date||''));
-  } catch(e) { console.error(e); }
+  } catch(e) { console.error('loadAll 오류:', e); }
+
+  // 로딩 해제 + 렌더는 항상 실행
   document.getElementById('loading').style.display = 'none';
   renderAll();
+
+  // 루틴 기본값은 렌더 후 비동기로 처리 (렌더를 막지 않음)
+  if(!state.routines.length) {
+    initDefaultRoutines().then(()=>renderRoutines());
+  }
 }
 
 async function initDefaultRoutines() {
@@ -685,7 +691,7 @@ window.showPage = (id, btn) => {
   document.getElementById('page-'+id).classList.add('active');
   btn.classList.add('active');
   if(id==='stats') renderStats();
-  if(id==='game' && currentGameTab==='winrate') renderWinrate();
+  if(id==='game'){ renderPlayers(); renderGames(); if(currentGameTab==='winrate') renderWinrate(); }
   if(id==='routine'){
     const dp=document.getElementById('routine-date-picker');
     if(dp) dp.value=routineDate;
@@ -1385,22 +1391,32 @@ window.togglePartnerField=()=>{
   document.getElementById('opp2-group').style.display=isD?'block':'none';
 };
 function renderPlayers() {
-  document.getElementById('player-list').innerHTML=state.players.length?state.players.map(p=>{
-    const name=(p.name||'').replace(/\n/g,' ').trim();
-    const level=(p.level||'').replace(/\n/g,' ').trim();
-    const club=(p.club||'').replace(/\n/g,' ').trim();
-    const feature=(p.feature||'').replace(/\n/g,' ').trim();
-    const memo=(p.memo||'').replace(/\n/g,' ').trim();
-    return`<div class="player-card" onclick="openEditPlayer('${p.id}')" style="cursor:pointer">
-    <div style="display:flex;align-items:center;gap:8px">
-      <div style="flex:1"><span style="font-size:15px;font-weight:600">${name}</span> <span style="font-size:12px;color:var(--text3)">${p.gender||''}</span>
-        ${level?`<span class="level-badge" style="margin-left:4px">${level}</span>`:''}
+  console.log('renderPlayers 호출, 데이터 수:', state.players.length, state.players);
+  if(!state.players.length){
+    document.getElementById('player-list').innerHTML='<p class="empty-msg">상대방을 추가해주세요</p>';
+    return;
+  }
+  const esc = s => (s||'').replace(/\n/g,' ').replace(/'/g,'&#39;').replace(/"/g,'&quot;').trim();
+  const html = state.players.map(p => {
+    const name = esc(p.name) || '이름 없음';
+    const level = esc(p.level);
+    const club = esc(p.club);
+    const feature = esc(p.feature);
+    const memo = esc(p.memo);
+    return `<div class="player-card" onclick="openEditPlayer('${p.id}')" style="cursor:pointer">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="flex:1">
+          <span style="font-size:15px;font-weight:600">${name}</span>
+          <span style="font-size:12px;color:var(--text3);margin-left:4px">${p.gender||''}</span>
+          ${level?`<span class="level-badge" style="margin-left:4px">${level}</span>`:''}
+        </div>
+        <button class="del-btn" onclick="event.stopPropagation();deletePlayer('${p.id}')">✕</button>
       </div>
-      <button class="del-btn" onclick="event.stopPropagation();deletePlayer('${p.id}')">✕</button>
-    </div>
-    <div style="font-size:12px;color:var(--text3);margin-top:4px">${club?'🏢 '+club:''}${feature?' · '+feature:''}</div>
-    ${memo?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${memo}</div>`:''}
-  </div>`;}).join(''):'<p class="empty-msg">상대방을 추가해주세요</p>';
+      ${club||feature?`<div style="font-size:12px;color:var(--text3);margin-top:4px">${club?'🏢 '+club:''}${club&&feature?' · ':''}${feature}</div>`:''}
+      ${memo?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${memo}</div>`:''}
+    </div>`;
+  }).join('');
+  document.getElementById('player-list').innerHTML = html;
 }
 window.savePlayer=async()=>{
   const id=document.getElementById('player-edit-id').value;
