@@ -24,12 +24,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
 .login-logo{font-size:64px;margin-bottom:12px}
 .login-title{font-size:22px;font-weight:800;color:var(--green-dark);margin-bottom:6px}
 .login-sub{font-size:13px;color:var(--text3);margin-bottom:32px;line-height:1.6}
-.google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px;border-radius:12px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:15px;font-weight:600;color:var(--text);font-family:inherit;transition:all 0.2s;margin-bottom:10px}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px;border-radius:12px;border:1.5px solid var(--border);background:var(--white);cursor:pointer;font-size:15px;font-weight:600;color:var(--text);font-family:inherit;transition:all 0.2s}
 .google-btn:hover{background:var(--bg);border-color:var(--green)}
 .google-btn img{width:22px;height:22px}
-.kakao-btn{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;padding:14px;border-radius:12px;border:none;background:#FEE500;cursor:pointer;font-size:15px;font-weight:600;color:#3C1E1E;font-family:inherit;transition:all 0.2s}
-.kakao-btn:hover{background:#F0D900}
-.kakao-btn img{width:22px;height:22px;border-radius:4px}
 #app{display:none}
 #loading{position:fixed;inset:0;background:var(--white);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;gap:12px}
 #loading .spinner{width:36px;height:36px;border:3px solid var(--green-light);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
@@ -193,12 +190,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:va
     <div class="login-logo">🏸</div>
     <div class="login-title">ShuttleLog</div>
     <div style="font-size:13px;color:var(--green);margin-top:2px;margin-bottom:2px">배드민턴 기록 프로그램</div>
-    <div class="login-sub">로그인하면 나만의 훈련 데이터가 저장됩니다</div>
+    <div class="login-sub">Google 계정으로 로그인하면<br>나만의 훈련 데이터가 저장됩니다</div>
     <button class="google-btn" onclick="signInWithGoogle()">
       <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">Google로 로그인
-    </button>
-    <button class="kakao-btn" onclick="signInWithKakao()">
-      <img src="https://developers.kakao.com/assets/img/about/logos/kakaolink/kakaolink_btn_medium.png" alt="Kakao">카카오로 로그인
     </button>
     <div style="font-size:11px;color:var(--text3);margin-top:20px">© Copyright 김정환</div>
   </div>
@@ -625,57 +619,7 @@ let selectedCalDate = '';
 
 // ── 인증
 window.signInWithGoogle = async () => { try { await signInWithPopup(auth, provider); } catch(e) { alert('로그인 실패: ' + e.message); } };
-window.signOut = async () => {
-  if(!confirm('로그아웃 하시겠습니까?')) return;
-  await fbSignOut(auth);
-  if(window.Kakao && Kakao.Auth) { try { Kakao.Auth.logout(()=>{}); } catch(e){} }
-  localStorage.removeItem('kakao_user');
-};
-
-// ── 카카오 로그인
-const KAKAO_JS_KEY = '4241b14c806c16d2e95ef9fff4a8c4fc';
-const kakaoSdk = document.createElement('script');
-kakaoSdk.src = 'https://developers.kakao.com/sdk/js/kakao.min.js';
-kakaoSdk.onload = () => {
-  if(!Kakao.isInitialized()) Kakao.init(KAKAO_JS_KEY);
-};
-document.head.appendChild(kakaoSdk);
-
-window.signInWithKakao = async () => {
-  if(!window.Kakao || !Kakao.isInitialized()){
-    alert('카카오 SDK 로딩 중입니다. 잠시 후 다시 시도해주세요.');
-    return;
-  }
-  Kakao.Auth.login({
-    success: authObj => {
-      Kakao.API.request({
-        url: '/v2/user/me',
-        success: async res => {
-          try {
-            const kakaoId = 'kakao_' + res.id;
-            const name = res.kakao_account?.profile?.nickname || '카카오 사용자';
-            const photo = res.kakao_account?.profile?.profile_image_url || '';
-            // 카카오 사용자 정보 저장
-            localStorage.setItem('kakao_user', JSON.stringify({uid: kakaoId, name, photo}));
-            // Firebase 익명 로그인으로 세션 유지
-            const { signInAnonymously, updateProfile } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
-            const cred = await signInAnonymously(auth);
-            await updateProfile(cred.user, {displayName: name, photoURL: photo});
-            // uid를 카카오 기반으로 오버라이드
-            currentUser = {...cred.user, uid: kakaoId, displayName: name, photoURL: photo};
-            document.getElementById('login-screen').style.display='none';
-            document.getElementById('app').style.display='block';
-            document.getElementById('user-name').textContent = name;
-            if(photo) document.getElementById('user-photo').src = photo;
-            loadAll();
-          } catch(e) { alert('오류: ' + e.message); }
-        },
-        fail: err => alert('카카오 정보 오류')
-      });
-    },
-    fail: err => alert('카카오 로그인 실패. 다시 시도해주세요.')
-  });
-};
+window.signOut = async () => { if(!confirm('로그아웃 하시겠습니까?')) return; await fbSignOut(auth); };
 
 onAuthStateChanged(auth, user => {
   if(user) {
