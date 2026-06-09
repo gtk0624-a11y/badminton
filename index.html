@@ -1275,7 +1275,7 @@ window.toggleCMFields=()=>{
   document.getElementById('cm-b2-group').style.display=isD?'block':'none';
 };
 let playerSort='fav';
-function setPlayerSort(type,btn){
+window.setPlayerSort=function(type,btn){
   playerSort=type;
   document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
