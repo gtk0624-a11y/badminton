@@ -1714,6 +1714,10 @@ window.analyzeMatchup = () => {
     <div style="font-size:13px;font-weight:600;margin-bottom:6px">최근 경기 기록</div>
     ${setDetail}`;
 };
+function updateBackBtn(){
+  const btn=document.getElementById('back-btn');
+  if(btn) btn.style.display=pageHistory.length?'flex':'none';
+}
 window.goBack=function(){
   if(!pageHistory.length)return;
   const prev=pageHistory.pop();
@@ -1750,10 +1754,10 @@ function renderRoutineLogHistory(){
     <div class="card" style="cursor:pointer;padding:10px 12px" onclick="loadRoutineLog('${l.date}')">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span style="font-size:13px;font-weight:500;flex:1">${l.date}</span>
-        <span style="font-size:14px;font-weight:700;color:${l.rate>=80?'var(--green)':l.rate>=50?'var(--amber)':'var(--red)'}">${l.rate}%</span>
+        <span style="font-size:14px;font-weight:700;color:${(Number(l.rate)||0)>=80?'var(--green)':(Number(l.rate)||0)>=50?'var(--amber)':'var(--red)'}">${Number(l.rate)||0}%</span>
       </div>
       <div style="height:6px;background:var(--gray-light);border-radius:3px;overflow:hidden">
-        <div style="height:6px;border-radius:3px;background:${l.rate>=80?'var(--green)':l.rate>=50?'var(--amber)':'var(--red)'};width:${l.rate}%"></div>
+        <div style="height:6px;border-radius:3px;background:${(Number(l.rate)||0)>=80?'var(--green)':(Number(l.rate)||0)>=50?'var(--amber)':'var(--red)'};width:${Number(l.rate)||0}%"></div>
       </div>
       <div style="font-size:11px;color:var(--text3);margin-top:4px">${l.done||0}/${l.total||0} 완료</div>
     </div>`).join('');
