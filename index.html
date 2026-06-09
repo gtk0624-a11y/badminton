@@ -185,6 +185,22 @@ body{
 .winrate-fill{height:8px;border-radius:4px;background:var(--green)}
 .winrate-fill.low{background:var(--red)}
 .logout-btn{background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.85);border-radius:20px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit}
+.accordion-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;margin-bottom:6px;transition:background 0.15s}
+.accordion-header:hover{background:var(--bg)}
+.accordion-header.open{border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:0;border-bottom:none}
+.accordion-title{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}
+.accordion-meta{font-size:12px;color:var(--text3)}
+.accordion-arrow{font-size:14px;color:var(--text3);transition:transform 0.2s}
+.accordion-header.open .accordion-arrow{transform:rotate(180deg)}
+.accordion-body{display:none;background:var(--white);border:1px solid var(--border);border-top:none;border-radius:0 0 var(--radius) var(--radius);padding:12px;margin-bottom:6px}
+.accordion-body.open{display:block}
+.predict-card{background:linear-gradient(135deg,#0a5c3a,#22b576);border-radius:var(--radius);padding:16px;color:#fff;margin-bottom:12px}
+.predict-meter{height:12px;background:rgba(255,255,255,0.2);border-radius:6px;margin:10px 0;overflow:hidden}
+.predict-fill{height:12px;border-radius:6px;background:#fff;transition:width 0.8s ease}
+.trend-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.trend-up{background:rgba(255,255,255,0.25);color:#fff}
+.trend-down{background:rgba(0,0,0,0.2);color:rgba(255,255,255,0.85)}
+.trend-same{background:rgba(255,255,255,0.15);color:rgba(255,255,255,0.85)}
 </style>
 </head>
 <body>
@@ -317,22 +333,43 @@ body{
     <div id="game-list"></div>
   </div>
   <div id="game-tab-winrate" style="display:none">
-    <div style="font-size:14px;font-weight:600;margin-bottom:12px">👤 개인별 승률</div>
-    <div id="winrate-personal"></div>
-    <div class="sep"></div>
-    <div style="font-size:14px;font-weight:600;margin-bottom:12px">👥 복식 상대 조합별 승률</div>
-    <div id="winrate-combo"></div>
-    <div class="sep"></div>
-    <div style="font-size:14px;font-weight:600;margin-bottom:12px">🤝 내 파트너 + 상대 조합별 승률</div>
-    <div id="winrate-mycombo"></div>
-    <div class="sep"></div>
-    <div style="font-size:14px;font-weight:600;margin-bottom:12px">🔍 맞대결 분석기</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
-      <div class="form-group" style="margin:0"><label>상대방 1</label><select id="matchup-opp1"><option value="">선택하세요</option></select></div>
-      <div class="form-group" style="margin:0"><label>상대방 2 (복식)</label><select id="matchup-opp2"><option value="">없음(단식)</option></select></div>
+    <!-- 개인별 -->
+    <div class="accordion-header open" onclick="toggleAccordion('acc-personal',this)">
+      <div class="accordion-title">👤 개인별 승률</div>
+      <div style="display:flex;align-items:center;gap:8px"><span class="accordion-meta" id="acc-personal-meta"></span><span class="accordion-arrow">▼</span></div>
     </div>
-    <button class="btn btn-green" style="width:100%;margin-bottom:12px" onclick="analyzeMatchup()">분석하기</button>
-    <div id="matchup-result"></div>
+    <div class="accordion-body open" id="acc-personal">
+      <div id="winrate-personal"></div>
+    </div>
+    <!-- 복식 조합 -->
+    <div class="accordion-header" onclick="toggleAccordion('acc-combo',this)">
+      <div class="accordion-title">👥 복식 상대 조합</div>
+      <div style="display:flex;align-items:center;gap:8px"><span class="accordion-meta" id="acc-combo-meta"></span><span class="accordion-arrow">▼</span></div>
+    </div>
+    <div class="accordion-body" id="acc-combo">
+      <div id="winrate-combo"></div>
+    </div>
+    <!-- 파트너 조합 -->
+    <div class="accordion-header" onclick="toggleAccordion('acc-mycombo',this)">
+      <div class="accordion-title">🤝 내 파트너+상대 조합</div>
+      <div style="display:flex;align-items:center;gap:8px"><span class="accordion-meta" id="acc-mycombo-meta"></span><span class="accordion-arrow">▼</span></div>
+    </div>
+    <div class="accordion-body" id="acc-mycombo">
+      <div id="winrate-mycombo"></div>
+    </div>
+    <!-- 맞대결+예측 -->
+    <div class="accordion-header open" onclick="toggleAccordion('acc-matchup',this)">
+      <div class="accordion-title">🔍 맞대결 분석 & 승부 예측</div>
+      <div style="display:flex;align-items:center;gap:8px"><span class="accordion-arrow">▼</span></div>
+    </div>
+    <div class="accordion-body open" id="acc-matchup">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+        <div class="form-group" style="margin:0"><label>상대방 1</label><select id="matchup-opp1"><option value="">선택하세요</option></select></div>
+        <div class="form-group" style="margin:0"><label>상대방 2 (복식)</label><select id="matchup-opp2"><option value="">없음(단식)</option></select></div>
+      </div>
+      <button class="btn btn-green" style="width:100%;margin-bottom:12px" onclick="analyzeMatchup()">분석 & 예측</button>
+      <div id="matchup-result"></div>
+    </div>
   </div>
 </div>
 </div><!-- /app -->
@@ -1147,7 +1184,9 @@ function renderWinrate() {
     const avgDiff=s.diffs.length?Math.round(s.diffs.reduce((a,b)=>a+b,0)/s.diffs.length):0;
     return{player:pMap[pid]||{name:'?',level:''},win:s.win,total:s.total,rate,avgDiff};
   }).sort((a,b)=>b.total-a.total);
-  pel.innerHTML=pList.length?pList.map(s=>`<div class="card">
+  const pmeta=document.getElementById('acc-personal-meta');
+  if(pmeta) pmeta.textContent=pList.length?pList.length+'명':'';
+  function personalCard(s){return`<div class="card">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
       <span style="font-size:14px;font-weight:600;flex:1">${s.player.name}</span>
       <span class="level-badge">${s.player.level||''}</span>
@@ -1155,7 +1194,12 @@ function renderWinrate() {
     </div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:4px">${s.win}승 ${s.total-s.win}패 (${s.total}경기) · 평균점수차 <span style="font-weight:600;color:${s.avgDiff>=0?'var(--green)':'var(--red)'}">${s.avgDiff>=0?'+':''}${s.avgDiff}</span></div>
     <div class="winrate-bar"><div class="winrate-fill ${s.rate<50?'low':''}" style="width:${s.rate}%"></div></div>
-  </div>`).join(''):'<p class="empty-msg">데이터 없음</p>';
+  </div>`;}
+  if(pList.length){
+    const show3=pList.slice(0,3).map(personalCard).join('');
+    const rest=pList.length>3?pList.slice(3).map(personalCard).join(''):'';
+    pel.innerHTML=show3+(rest?`<div id="personal-more" style="display:none">${rest}</div><button class="btn btn-outline" style="width:100%;margin-top:6px" onclick="toggleMore('personal-more',this)">더 보기 (${pList.length-3}명) ▾</button>`:'');
+  } else { pel.innerHTML='<p class="empty-msg">데이터 없음</p>'; }
 
   // 상대 조합별 (BEST/BAD 포함)
   const cel=document.getElementById('winrate-combo');
@@ -1191,7 +1235,28 @@ function renderWinrate() {
     <div style="font-size:12px;color:var(--text3);margin-bottom:4px">${s.win}승 ${s.total-s.win}패 (${s.total}경기) · 평균점수차 <span style="font-weight:600;color:${s.avgDiff>=0?'var(--green)':'var(--red)'}">${s.avgDiff>=0?'+':''}${s.avgDiff}</span></div>
     <div class="winrate-bar"><div class="winrate-fill ${s.rate<50?'low':''}" style="width:${s.rate}%"></div></div>
   </div>`).join('');
-  cel.innerHTML=cList.length?comboHtml:'<p class="empty-msg">복식 데이터 없음</p>';
+  const cmeta=document.getElementById('acc-combo-meta');
+  if(cmeta) cmeta.textContent=cList.length?cList.length+'개 조합':'';
+  if(cList.length){
+    // BEST/BAD는 항상 표시, 나머지 더보기
+    const bestBad=comboHtml.split('<div class="card">').slice(0,1).join('');
+    const cards=cList.map(s=>`<div class="card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span style="font-size:13px;font-weight:600;flex:1">vs ${s.players.map(p=>p.name).join(' + ')}</span>
+        <span style="font-size:16px;font-weight:700;color:${s.rate>=50?'var(--green)':'var(--red)'}">${s.rate}%</span>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-bottom:4px">${s.win}승 ${s.total-s.win}패 (${s.total}경기) · 평균점수차 <span style="font-weight:600;color:${s.avgDiff>=0?'var(--green)':'var(--red)'}">${s.avgDiff>=0?'+':''}${s.avgDiff}</span></div>
+      <div class="winrate-bar"><div class="winrate-fill ${s.rate<50?'low':''}" style="width:${s.rate}%"></div></div>
+    </div>`);
+    const show=cards.slice(0,3).join('');
+    const more=cards.length>3?cards.slice(3).join(''):'';
+    // BEST/BAD 배너 추출
+    const banners=[];
+    if(cList.length>=1) banners.push(document.createElement('div'));
+    cel.innerHTML=comboHtml.split('<div class="card">')[0]
+      +show
+      +(more?`<div id="combo-more" style="display:none">${more}</div><button class="btn btn-outline" style="width:100%;margin-top:6px" onclick="toggleMore('combo-more',this)">더 보기 (${cList.length-3}개) ▾</button>`:'');
+  } else { cel.innerHTML='<p class="empty-msg">복식 데이터 없음</p>'; }
 
   // 내 파트너 + 상대 조합
   const myEl=document.getElementById('winrate-mycombo');
@@ -1200,14 +1265,21 @@ function renderWinrate() {
     const avgDiff=s.diffs.length?Math.round(s.diffs.reduce((a,b)=>a+b,0)/s.diffs.length):0;
     return{partner:pMap[s.partner]||{name:'?'},opps:s.oppIds.map(pid=>pMap[pid]||{name:'?'}),win:s.win,total:s.total,rate,avgDiff};
   }).sort((a,b)=>b.total-a.total);
-  myEl.innerHTML=mList.length?mList.map(s=>`<div class="card">
+  const mmeta=document.getElementById('acc-mycombo-meta');
+  if(mmeta) mmeta.textContent=mList.length?mList.length+'개 조합':'';
+  function myComboCard(s){return`<div class="card">
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
       <span style="font-size:13px;font-weight:600;flex:1">나+${s.partner.name} vs ${s.opps.map(p=>p.name).join('+')} </span>
       <span style="font-size:16px;font-weight:700;color:${s.rate>=50?'var(--green)':'var(--red)'}">${s.rate}%</span>
     </div>
     <div style="font-size:12px;color:var(--text3);margin-bottom:4px">${s.win}승 ${s.total-s.win}패 (${s.total}경기) · 평균점수차 <span style="font-weight:600;color:${s.avgDiff>=0?'var(--green)':'var(--red)'}">${s.avgDiff>=0?'+':''}${s.avgDiff}</span></div>
     <div class="winrate-bar"><div class="winrate-fill ${s.rate<50?'low':''}" style="width:${s.rate}%"></div></div>
-  </div>`).join(''):'<p class="empty-msg">파트너 조합 데이터 없음<br><span style="font-size:11px">게임 기록 시 내 파트너를 선택하세요</span></p>';
+  </div>`;}
+  if(mList.length){
+    const show=mList.slice(0,3).map(myComboCard).join('');
+    const more=mList.length>3?mList.slice(3).map(myComboCard).join(''):'';
+    myEl.innerHTML=show+(more?`<div id="mycombo-more" style="display:none">${more}</div><button class="btn btn-outline" style="width:100%;margin-top:6px" onclick="toggleMore('mycombo-more',this)">더 보기 (${mList.length-3}개) ▾</button>`:'');
+  } else { myEl.innerHTML='<p class="empty-msg">파트너 조합 데이터 없음<br><span style="font-size:11px">게임 기록 시 내 파트너를 선택하세요</span></p>'; }
 
   // 맞대결 분석기 드롭다운 업데이트
   updateMatchupSelects();
@@ -1222,6 +1294,17 @@ function updateMatchupSelects() {
     if(el) el.innerHTML=i===0?opts:optAll;
   });
 }
+
+window.toggleAccordion = (id, header) => {
+  const body=document.getElementById(id);
+  body.classList.toggle('open');
+  header.classList.toggle('open');
+};
+window.toggleMore = (id, btn) => {
+  const el=document.getElementById(id);
+  if(el.style.display==='none'){el.style.display='block';btn.textContent='접기 ▲';}
+  else{el.style.display='none';const n=el.querySelectorAll('.card').length;btn.textContent=`더 보기 (${n}개) ▾`;}
+};
 
 window.analyzeMatchup = () => {
   const pMap={};state.players.forEach(p=>{pMap[p.id]=p;});
@@ -1260,14 +1343,35 @@ window.analyzeMatchup = () => {
     </div>`;
   }).join('');
 
+  // 예측 계산
+  const recentGames=filtered.slice(0,3);
+  const recentWins=recentGames.filter(g=>g.result==='승').length;
+  const recentRate=recentGames.length?Math.round(recentWins/recentGames.length*100):rate;
+  const trendScore=recentGames.length>=2?(recentRate-rate):0;
+  const predictRate=Math.min(95,Math.max(5,Math.round(rate*0.5+recentRate*0.3+(avgDiff*2)*0.2)));
+  const trend=trendScore>10?'📈 상승세':trendScore<-10?'📉 하락세':'➡️ 보합세';
+  const trendCls=trendScore>10?'trend-up':trendScore<-10?'trend-down':'trend-same';
+  const confidence=total>=10?'높음':total>=5?'보통':'낮음 (데이터 부족)';
+  const msg=predictRate>=70?'승리 가능성이 높습니다 💪':predictRate>=50?'박빙의 승부가 예상됩니다 ⚡':predictRate>=35?'어려운 상대입니다. 전략이 필요합니다 🎯':'강한 상대입니다. 약점을 집중 공략하세요 🔥';
+
   resEl.innerHTML=`
-    <div style="background:${rate>=50?'linear-gradient(135deg,#0a5c3a,#1a8a5a)':'linear-gradient(135deg,#8B1A0A,#C0392B)'};border-radius:var(--radius);padding:16px;color:#fff;margin-bottom:12px">
-      <div style="font-size:13px;opacity:0.8;margin-bottom:4px">vs ${oppName} 맞대결 분석</div>
-      <div style="font-size:32px;font-weight:800;margin-bottom:4px">${rate}%</div>
-      <div style="font-size:13px;opacity:0.85">${wins}승 ${total-wins}패 (${total}경기) · 평균점수차 ${avgDiff>=0?'+':''}${avgDiff}</div>
-      <div class="winrate-bar" style="margin-top:10px;background:rgba(255,255,255,0.2)"><div style="height:8px;border-radius:4px;background:#fff;width:${rate}%"></div></div>
+    <div class="predict-card">
+      <div style="font-size:12px;opacity:0.8;margin-bottom:6px">🎯 vs ${oppName} 승부 예측</div>
+      <div style="display:flex;align-items:flex-end;gap:12px;margin-bottom:6px">
+        <div style="font-size:40px;font-weight:800;line-height:1">${predictRate}%</div>
+        <div>
+          <div style="font-size:13px;opacity:0.9">${msg}</div>
+          <div style="margin-top:4px"><span class="${trendCls} trend-badge">${trend}</span> <span style="font-size:11px;opacity:0.7">예측 신뢰도: ${confidence}</span></div>
+        </div>
+      </div>
+      <div class="predict-meter"><div class="predict-fill" style="width:${predictRate}%"></div></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px;text-align:center">
+        <div><div style="font-size:18px;font-weight:700">${rate}%</div><div style="font-size:10px;opacity:0.75">전체 승률</div></div>
+        <div><div style="font-size:18px;font-weight:700">${recentRate}%</div><div style="font-size:10px;opacity:0.75">최근 승률</div></div>
+        <div><div style="font-size:18px;font-weight:700">${avgDiff>=0?'+':''}${avgDiff}</div><div style="font-size:10px;opacity:0.75">평균점수차</div></div>
+      </div>
     </div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:6px">최근 경기 (최대 5경기)</div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:6px">최근 경기 기록</div>
     ${setDetail}`;
 };
 </script>
