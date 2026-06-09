@@ -249,6 +249,9 @@ body{
 
 <!-- 홈 -->
 <div id="page-home" class="page active">
+  <!-- 뒤로가기 버튼 (fixed) -->
+  <button id="back-btn" onclick="goBack()" style="display:none;position:fixed;top:12px;left:12px;z-index:150;background:rgba(255,255,255,0.9);border:1px solid var(--border);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;align-items:center;gap:4px;box-shadow:0 2px 8px rgba(0,0,0,0.1)">← 뒤로</button>
+
   <div class="home-header">
     <div class="home-header-inner">
       <div class="home-header-title">🏸 ShuttleLog <span style="font-size:13px;font-weight:400;opacity:0.8">배드민턴 기록 프로그램</span></div>
@@ -283,7 +286,22 @@ body{
 <!-- 루틴 -->
 <div id="page-routine" class="page">
   <div class="page-banner"><div class="page-banner-title">✅ 훈련 루틴</div><button class="btn btn-white btn-sm" onclick="openModal('modal-routine')">+ 추가</button></div>
+  <div class="card" style="margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <input type="date" id="routine-date-picker" style="flex:1;padding:8px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-family:inherit">
+      <button class="btn btn-outline btn-sm" onclick="setRoutineDate(new Date().toISOString().split('T')[0])">오늘</button>
+    </div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:8px" id="routine-date-status"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-green btn-sm" style="flex:1" onclick="saveRoutineLog()">✅ 이 날 루틴 기록 저장</button>
+      <button class="btn btn-outline btn-sm" onclick="resetRoutineChecks()">초기화</button>
+    </div>
+  </div>
   <div id="routine-list"></div>
+  <div style="margin-top:16px">
+    <div style="font-size:14px;font-weight:600;margin-bottom:10px;color:var(--text2)">📋 루틴 기록 히스토리</div>
+    <div id="routine-log-history"></div>
+  </div>
 </div>
 
 <!-- 캘린더 -->
@@ -693,7 +711,9 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
-let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[], clubmatches:[] };
+let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[], clubmatches:[], routineLogs:[] };
+let routineDate = new Date().toISOString().split('T')[0];
+let pageHistory = [];
 let ratings = { condition:0, focusRating:0 };
 let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
 let logFilter = '전체', ytFilter = '전체', currentGameTab = 'players';
@@ -752,12 +772,13 @@ async function loadAll() {
   document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('game-date').value = new Date().toISOString().split('T')[0];
   try {
-    const [logs,routines,events,youtube,memos,equipment,players,games,clubmatches] = await Promise.all([
+    const [logs,routines,events,youtube,memos,equipment,players,games,clubmatches,routineLogs] = await Promise.all([
       getAll('logs'), getAll('routines'), getAll('events'), getAll('youtube'),
-      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'), getAll('clubmatches'),
+      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'), getAll('clubmatches'), getAll('routineLogs'),
     ]);
     state.logs = logs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
     state.clubmatches = (clubmatches||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    state.routineLogs = (routineLogs||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     state.routines = routines;
     if(!state.routines.length) await initDefaultRoutines();
     state.events = events;
@@ -794,6 +815,7 @@ function renderAll() {
   renderStats(); renderYoutube(); renderEquipment(); renderMemos();
   renderPlayers(); renderGames(); populatePlayerSelects(); renderClubMatches(); populateCMSelects();
   const cmDate=document.getElementById('cm-date');if(cmDate)cmDate.value=new Date().toISOString().split('T')[0];
+  renderRoutineLogHistory();
 }
 
 // ── UI 공통 ────────────────────────────────────────────────
@@ -999,10 +1021,11 @@ function renderCalendar() {
     const isT=d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
     const evs=state.events.filter(e=>e.date===ds);
     const dayGames=state.games.filter(g=>g.date===ds);
+    const dayRoutine=state.routineLogs.find(l=>l.date===ds);
     const gameDots=dayGames.slice(0,4).map(g=>`<div class="${g.result==='승'?'dot-win':'dot-lose'}" style="width:6px;height:6px;border-radius:50%;display:inline-block;margin:0 1px"></div>`).join('');
     html+=`<div class="cal-cell${isT?' today':''}" onclick="openDayDetail('${ds}')">
       <div class="cal-num">${d}</div>
-      <div class="cal-dots">${evs.map(e=>`<div class="cal-dot dot-${e.type}"></div>`).join('')}</div>
+      <div class="cal-dots">${evs.map(e=>`<div class="cal-dot dot-${e.type}"></div>`).join('')}${dayRoutine?'<div class="cal-dot" style="background:#059669"></div>':''}</div>
       ${gameDots?`<div>${gameDots}</div>`:''}
     </div>`;
   }
@@ -1691,6 +1714,50 @@ window.analyzeMatchup = () => {
     <div style="font-size:13px;font-weight:600;margin-bottom:6px">최근 경기 기록</div>
     ${setDetail}`;
 };
+window.goBack=function(){
+  if(!pageHistory.length)return;
+  const prev=pageHistory.pop();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+prev).classList.add('active');
+  const pages=['home','log','routine','calendar','stats','youtube','memo','game','clubmatch'];
+  const navBtns=document.querySelectorAll('.nav-btn');
+  const idx=pages.indexOf(prev);
+  if(idx>=0&&navBtns[idx])navBtns[idx].classList.add('active');
+  updateBackBtn();
+};
+window.setRoutineDate=function(d){
+  routineDate=d;
+  const dp=document.getElementById('routine-date-picker');
+  if(dp)dp.value=d;
+  renderRoutines();
+};
+window.saveRoutineLog=async function(){
+  const checkedIds=state.routines.filter(r=>r._done).map(r=>r.id);
+  const total=state.routines.length,done=checkedIds.length;
+  const rate=total?Math.round(done/total*100):0;
+  const existing=state.routineLogs.find(l=>l.date===routineDate);
+  if(existing){await updItem('routineLogs',existing.id,{checkedIds,done,total,rate});Object.assign(existing,{checkedIds,done,total,rate});}
+  else{const item=await addItem('routineLogs',{date:routineDate,checkedIds,done,total,rate});state.routineLogs.unshift(item);state.routineLogs.sort((a,b)=>b.date.localeCompare(a.date));}
+  renderRoutineLogHistory();renderCalendar();showToast(routineDate+' 루틴 저장 ('+rate+'%)');
+};
+window.resetRoutineChecks=function(){state.routines.forEach(r=>r._done=false);renderRoutines();};
+window.loadRoutineLog=function(date){setRoutineDate(date);showPage('routine',document.querySelectorAll('.nav-btn')[2]);};
+function renderRoutineLogHistory(){
+  const el=document.getElementById('routine-log-history');if(!el)return;
+  if(!state.routineLogs.length){el.innerHTML='<p class="empty-msg">루틴 기록이 없습니다</p>';return;}
+  el.innerHTML=state.routineLogs.slice(0,10).map(l=>`
+    <div class="card" style="cursor:pointer;padding:10px 12px" onclick="loadRoutineLog('${l.date}')">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:500;flex:1">${l.date}</span>
+        <span style="font-size:14px;font-weight:700;color:${l.rate>=80?'var(--green)':l.rate>=50?'var(--amber)':'var(--red)'}">${l.rate}%</span>
+      </div>
+      <div style="height:6px;background:var(--gray-light);border-radius:3px;overflow:hidden">
+        <div style="height:6px;border-radius:3px;background:${l.rate>=80?'var(--green)':l.rate>=50?'var(--amber)':'var(--red)'};width:${l.rate}%"></div>
+      </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">${l.done||0}/${l.total||0} 완료</div>
+    </div>`).join('');
+}
 </script>
 </body>
 </html>
