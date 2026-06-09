@@ -54,7 +54,7 @@ body{
 #loading .spinner{width:36px;height:36px;border:3px solid var(--green-light);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:2px solid var(--green-light);display:grid;grid-template-columns:repeat(8,1fr);z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(29,158,117,0.09)}
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:2px solid var(--green-light);display:grid;grid-template-columns:repeat(9,1fr);z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(29,158,117,0.09)}
 .nav-btn{display:flex;flex-direction:column;align-items:center;padding:7px 0 5px;gap:2px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:9px;font-family:inherit}
 .nav-btn.active{color:var(--green)}
 .nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
@@ -185,6 +185,15 @@ body{
 .winrate-fill{height:8px;border-radius:4px;background:var(--green)}
 .winrate-fill.low{background:var(--red)}
 .logout-btn{background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.85);border-radius:20px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit}
+.dot-win{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--green);margin:1px}
+.dot-lose{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--red);margin:1px}
+.type-pill{display:inline-block;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:600;background:var(--gray-light);color:var(--text2)}
+.day-popup{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:none;align-items:center;justify-content:center}
+.day-popup.open{display:flex}
+.day-popup-box{background:var(--white);border-radius:16px;padding:20px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto}
+.match-type-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.match-type-tab{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-size:12px;cursor:pointer;font-family:inherit;color:var(--text2)}
+.match-type-tab.active{background:var(--green);border-color:var(--green);color:#fff}
 .sort-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-size:12px;cursor:pointer;font-family:inherit;color:var(--text2);white-space:nowrap}
 .sort-btn.active{background:var(--green);border-color:var(--green);color:#fff}
 .player-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
@@ -240,7 +249,7 @@ body{
           <img id="user-photo" src="" alt="" onerror="this.style.display='none'">
           <span id="user-name">로딩중...</span>
         </div>
-        <button class="logout-btn" onclick="signOut()">로그아웃</button>
+        <div style="display:flex;gap:6px"><button class="logout-btn" onclick="openModal('modal-myname')">✎ 이름</button><button class="logout-btn" onclick="signOut()">로그아웃</button></div>
       </div>
     </div>
   </div>
@@ -318,6 +327,35 @@ body{
   <div id="memo-tab-memo" style="display:none">
     <div class="section-header"><div style="font-size:14px;font-weight:600">메모</div><button class="btn btn-green btn-sm" onclick="openModal('modal-memo')">+ 추가</button></div>
     <div id="memo-list"></div>
+  </div>
+</div>
+
+<!-- 클럽매치 -->
+<div id="page-clubmatch" class="page">
+  <div class="page-banner"><div class="page-banner-title">👥 클럽매치</div><button class="btn btn-white btn-sm" onclick="openModal('modal-clubmatch')">+ 기록</button></div>
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="switchClubTab('games',this)">경기 기록</button>
+    <button class="filter-tab" onclick="switchClubTab('analysis',this)">전력 분석</button>
+  </div>
+  <div id="clubmatch-tab-games">
+    <div id="clubmatch-list"></div>
+  </div>
+  <div id="clubmatch-tab-analysis" style="display:none">
+    <div style="font-size:13px;color:var(--text3);margin-bottom:12px">멤버 4명을 선택해 조합별 예상 승률을 분석합니다</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:6px">🔵 우리팀</div>
+        <div class="form-group" style="margin-bottom:6px"><label>선수 1</label><select id="cm-team1-p1"><option value="">선택</option></select></div>
+        <div class="form-group" style="margin-bottom:0"><label>선수 2</label><select id="cm-team1-p2"><option value="">선택 안 함</option></select></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:6px">🔴 상대팀</div>
+        <div class="form-group" style="margin-bottom:6px"><label>선수 1</label><select id="cm-team2-p1"><option value="">선택</option></select></div>
+        <div class="form-group" style="margin-bottom:0"><label>선수 2</label><select id="cm-team2-p2"><option value="">선택 안 함</option></select></div>
+      </div>
+    </div>
+    <button class="btn btn-green" style="width:100%;margin-bottom:12px" onclick="analyzeClubMatch()">조합 분석</button>
+    <div id="clubmatch-analysis-result"></div>
   </div>
 </div>
 
@@ -524,41 +562,96 @@ body{
     <div class="form-row">
       <div class="form-group"><label>날짜</label><input type="date" id="game-date"></div>
       <div class="form-group"><label>경기 유형</label>
-        <select id="game-matchType" onchange="togglePartnerField()">
+        <select id="game-matchType" onchange="toggleGameFields()">
           <option value="단식">단식</option><option value="남복">남복</option><option value="여복">여복</option><option value="혼복">혼복</option>
         </select>
       </div>
     </div>
-    <div class="form-group" id="my-partner-group" style="display:none"><label>내 파트너</label><select id="game-myPartner"><option value="">선택 안 함</option></select></div>
-    <div class="form-group"><label>상대방 1</label><select id="game-opponent1"><option value="">선택하세요</option></select></div>
-    <div class="form-group" id="opp2-group" style="display:none"><label>상대방 2</label><select id="game-opponent2"><option value="">선택 안 함</option></select></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:6px">🔵 우리팀 (나 포함)</div>
+        <div class="form-group" style="margin-bottom:6px"><label>선수 1 (나)</label><select id="game-my1"><option value="me">나 (<span id="my-name-preview">김정환</span>)</option></select></div>
+        <div class="form-group" id="my-p2-group" style="display:none;margin-bottom:0"><label>파트너</label><select id="game-my2"><option value="">선택 안 함</option></select></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:6px">🔴 상대팀</div>
+        <div class="form-group" style="margin-bottom:6px"><label>상대 1</label><select id="game-opponent1"><option value="">선택하세요</option></select></div>
+        <div class="form-group" id="opp2-group" style="display:none;margin-bottom:0"><label>상대 2</label><select id="game-opponent2"><option value="">선택 안 함</option></select></div>
+      </div>
+    </div>
     <div class="sep"></div>
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">세트 점수</div>
     <div style="background:var(--gray-light);border-radius:var(--radius-sm);padding:10px;margin-bottom:8px">
-      <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;margin-bottom:6px">
-        <span style="font-size:11px;color:var(--text3);width:32px"></span>
-        <div style="text-align:center;font-size:11px;font-weight:600;color:var(--text2)">나(우리)</div>
-        <div style="text-align:center;font-size:11px;font-weight:600;color:var(--text2)">상대방</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;text-align:center">
+        <div style="font-size:11px;font-weight:600;color:var(--green)">우리팀</div>
+        <div style="font-size:11px;font-weight:600;color:var(--red)">상대팀</div>
       </div>
-      <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;margin-bottom:6px">
-        <span style="font-size:11px;color:var(--text3);width:32px">1세트</span>
-        <input type="number" id="my-score1" min="0" max="30" placeholder="0" style="text-align:center">
-        <input type="number" id="opp-score1" min="0" max="30" placeholder="0" style="text-align:center">
-      </div>
-      <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center;margin-bottom:6px">
-        <span style="font-size:11px;color:var(--text3);width:32px">2세트</span>
-        <input type="number" id="my-score2" min="0" max="30" placeholder="0" style="text-align:center">
-        <input type="number" id="opp-score2" min="0" max="30" placeholder="0" style="text-align:center">
-      </div>
-      <div style="display:grid;grid-template-columns:auto 1fr 1fr;gap:8px;align-items:center">
-        <span style="font-size:11px;color:var(--text3);width:32px">3세트</span>
-        <input type="number" id="my-score3" min="0" max="30" placeholder="선택" style="text-align:center">
-        <input type="number" id="opp-score3" min="0" max="30" placeholder="선택" style="text-align:center">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <input type="number" id="my-score1" min="0" max="30" placeholder="0" style="text-align:center;font-size:20px;font-weight:700;padding:12px">
+        <input type="number" id="opp-score1" min="0" max="30" placeholder="0" style="text-align:center;font-size:20px;font-weight:700;padding:12px">
       </div>
     </div>
     <div class="form-group"><label>승패</label><select id="game-result"><option value="승">승</option><option value="패">패</option></select></div>
+    <div class="form-group"><label>상대 강점</label><input type="text" id="game-opp-strength" placeholder="예: 백핸드 강함, 스매시 파워"></div>
+    <div class="form-group"><label>상대 약점</label><input type="text" id="game-opp-weakness" placeholder="예: 네트 약함, 풋워크 느림"></div>
     <div class="form-group"><label>메모</label><input type="text" id="game-memo"></div>
     <div class="btn-row"><button class="btn btn-green" onclick="saveGame()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-game')">취소</button></div>
+  </div>
+</div>
+
+<!-- 클럽매치 기록 모달 -->
+<div class="modal-overlay" id="modal-clubmatch">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-title">클럽매치 기록</div>
+    <div class="form-row">
+      <div class="form-group"><label>날짜</label><input type="date" id="cm-date"></div>
+      <div class="form-group"><label>경기 유형</label>
+        <select id="cm-matchType" onchange="toggleCMFields()">
+          <option value="단식">단식</option><option value="남복">남복</option><option value="여복">여복</option><option value="혼복">혼복</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:6px">🔵 A팀</div>
+        <div class="form-group" style="margin-bottom:6px"><label>선수 1</label><select id="cm-a1"><option value="">선택</option></select></div>
+        <div class="form-group" id="cm-a2-group" style="display:none;margin-bottom:0"><label>선수 2</label><select id="cm-a2"><option value="">선택 안 함</option></select></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:6px">🔴 B팀</div>
+        <div class="form-group" style="margin-bottom:6px"><label>선수 1</label><select id="cm-b1"><option value="">선택</option></select></div>
+        <div class="form-group" id="cm-b2-group" style="display:none;margin-bottom:0"><label>선수 2</label><select id="cm-b2"><option value="">선택 안 함</option></select></div>
+      </div>
+    </div>
+    <div style="background:var(--gray-light);border-radius:var(--radius-sm);padding:10px;margin-bottom:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;text-align:center">
+        <div style="font-size:11px;font-weight:600;color:var(--green)">A팀</div>
+        <div style="font-size:11px;font-weight:600;color:var(--red)">B팀</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <input type="number" id="cm-score-a" min="0" max="30" placeholder="0" style="text-align:center;font-size:20px;font-weight:700;padding:12px">
+        <input type="number" id="cm-score-b" min="0" max="30" placeholder="0" style="text-align:center;font-size:20px;font-weight:700;padding:12px">
+      </div>
+    </div>
+    <div class="form-group"><label>메모</label><input type="text" id="cm-memo"></div>
+    <div class="btn-row"><button class="btn btn-green" onclick="saveClubMatch()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-clubmatch')">취소</button></div>
+  </div>
+</div>
+
+<!-- 날짜 팝업 -->
+<div class="day-popup" id="day-popup">
+  <div class="day-popup-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700" id="day-popup-title"></div>
+      <button onclick="closeDayPopup()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3)">✕</button>
+    </div>
+    <div id="day-popup-content"></div>
+  </div>
+</div>
+
+<!-- 이름 설정 모달 -->
+<div class="modal-overlay" id="modal-myname">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-title">내 이름 설정</div>
+    <div class="form-group"><label>이름</label><input type="text" id="myname-input" placeholder="예: 김정환"></div>
+    <div class="btn-row"><button class="btn btn-green" onclick="saveMyName()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-myname')">취소</button></div>
   </div>
 </div>
 
@@ -572,6 +665,7 @@ body{
   <button class="nav-btn" onclick="showPage('youtube',this)"><svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor"/></svg>유튜브</button>
   <button class="nav-btn" onclick="showPage('memo',this)"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>장비</button>
   <button class="nav-btn" onclick="showPage('game',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>게임</button>
+  <button class="nav-btn" onclick="showPage('clubmatch',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>클럽매치</button>
 </nav>
 <div style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--text3);opacity:0.6;pointer-events:none">© Copyright 김정환</div>
 
@@ -598,7 +692,8 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
-let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[] };
+let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[], clubmatches:[] };
+let myName = localStorage.getItem('myName')||'김정환';
 let ratings = { condition:0, focusRating:0 };
 let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
 let logFilter = '전체', ytFilter = '전체', currentGameTab = 'players';
@@ -656,12 +751,14 @@ async function loadAll() {
   document.getElementById('today-date').textContent = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'short'});
   document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('game-date').value = new Date().toISOString().split('T')[0];
+  const cmDate=document.getElementById('cm-date');if(cmDate)cmDate.value=new Date().toISOString().split('T')[0];
   try {
-    const [logs,routines,events,youtube,memos,equipment,players,games] = await Promise.all([
+    const [logs,routines,events,youtube,memos,equipment,players,games,clubmatches] = await Promise.all([
       getAll('logs'), getAll('routines'), getAll('events'), getAll('youtube'),
-      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'),
+      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'), getAll('clubmatches'),
     ]);
     state.logs = logs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    state.clubmatches = (clubmatches||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     state.routines = routines;
     if(!state.routines.length) await initDefaultRoutines();
     state.events = events;
@@ -696,7 +793,8 @@ async function initDefaultRoutines() {
 function renderAll() {
   renderHome(); renderLogList(); renderRoutines(); renderCalendar();
   renderStats(); renderYoutube(); renderEquipment(); renderMemos();
-  renderPlayers(); renderGames(); populatePlayerSelects();
+  renderPlayers(); renderGames(); populatePlayerSelects(); renderClubMatches(); populateCMSelects();
+  updateMyNameDisplay();
 }
 
 // ── UI 공통 ────────────────────────────────────────────────
@@ -900,13 +998,69 @@ function renderCalendar() {
     const ds=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
     const isT=d===today.getDate()&&calMonth===today.getMonth()&&calYear===today.getFullYear();
     const evs=state.events.filter(e=>e.date===ds);
-    html+=`<div class="cal-cell${isT?' today':''}" onclick="openAddEvent('${ds}')"><div class="cal-num">${d}</div><div class="cal-dots">${evs.map(e=>`<div class="cal-dot dot-${e.type}"></div>`).join('')}</div></div>`;
+    const dayGames=state.games.filter(g=>g.date===ds);
+    const hasGame=dayGames.length>0;
+    const wins=dayGames.filter(g=>g.result==='승').length;
+    const loses=dayGames.filter(g=>g.result==='패').length;
+    let gameDot='';
+    if(hasGame) gameDot=`<div style="display:flex;gap:1px;margin-top:1px">${dayGames.slice(0,4).map(g=>`<div class="${g.result==='승'?'dot-win':'dot-lose'}" style="width:7px;height:7px"></div>`).join('')}</div>`;
+    html+=`<div class="cal-cell${isT?' today':''}" onclick="openDayDetail('${ds}')">
+      <div class="cal-num">${d}</div>
+      <div class="cal-dots">${evs.map(e=>`<div class="cal-dot dot-${e.type}"></div>`).join('')}</div>
+      ${gameDot}
+    </div>`;
   }
   const rem=(7-((first+last)%7))%7;
   for(let i=1;i<=rem;i++) html+=`<div class="cal-cell other-month"><div class="cal-num">${i}</div></div>`;
   document.getElementById('cal-grid').innerHTML=html;
   renderUpcoming();
 }
+
+window.openDayDetail=(ds)=>{
+  const pMap={};state.players.forEach(p=>{pMap[p.id]=p;});
+  const dayGames=state.games.filter(g=>g.date===ds);
+  const dayEvents=state.events.filter(e=>e.date===ds);
+  const popup=document.getElementById('day-popup');
+  const title=document.getElementById('day-popup-title');
+  const contentEl=document.getElementById('day-popup-content');
+  title.textContent=ds.replace(/-/g,'.');
+  let html='';
+  if(dayEvents.length){
+    html+=`<div style="margin-bottom:10px">${dayEvents.map(e=>`<div style="display:flex;align-items:center;gap:6px;padding:6px 0;border-bottom:1px solid var(--border)"><span class="badge badge-${e.type}">${e.type}</span><span style="font-size:13px">${e.title}</span></div>`).join('')}</div>`;
+  }
+  if(dayGames.length){
+    const wins=dayGames.filter(g=>g.result==='승').length;
+    html+=`<div style="font-size:12px;font-weight:600;color:var(--text3);margin-bottom:8px">게임 ${dayGames.length}경기 · ${wins}승 ${dayGames.length-wins}패</div>`;
+    html+=dayGames.map(g=>{
+      const o1=pMap[g.opponent1];const o2=pMap[g.opponent2];const my2=pMap[g.my2];
+      const score=g.myScore1!==''&&g.oppScore1!==''?`${g.myScore1}:${g.oppScore1}`:'';
+      return`<div style="background:var(--bg);border-radius:var(--radius-sm);padding:10px;margin-bottom:6px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+          <span class="badge badge-${g.result==='승'?'승':'패'}">${g.result}</span>
+          <span class="type-pill">${g.matchType||'단식'}</span>
+          ${score?`<span style="font-size:15px;font-weight:700;margin-left:auto">${score}</span>`:''}
+        </div>
+        <div style="font-size:12px;color:var(--text2)">
+          <span style="color:var(--green)">${myName}${my2?'+'+my2.name:''}</span>
+          <span style="color:var(--text3);margin:0 4px">vs</span>
+          <span style="color:var(--red)">${o1?o1.name:'?'}${o2?'+'+o2.name:''}</span>
+        </div>
+        ${g.oppStrength?`<div style="font-size:11px;color:var(--text3);margin-top:3px">💪 ${g.oppStrength}</div>`:''}
+        ${g.oppWeakness?`<div style="font-size:11px;color:var(--text3)">🎯 ${g.oppWeakness}</div>`:''}
+        ${g.memo?`<div style="font-size:11px;color:var(--text3)">${g.memo}</div>`:''}
+      </div>`;
+    }).join('');
+  }
+  if(!dayGames.length&&!dayEvents.length){
+    html='<button class="btn btn-green" style="width:100%;margin-top:4px" onclick="openAddEvent(''+ds+'');closeDayPopup()">+ 일정 추가</button>';
+  } else {
+    html+=`<button class="btn btn-outline" style="width:100%;margin-top:8px" onclick="openAddEvent('${ds}');closeDayPopup()">+ 일정 추가</button>`;
+  }
+  contentEl.innerHTML=html;
+  popup.classList.add('open');
+};
+window.closeDayPopup=()=>document.getElementById('day-popup').classList.remove('open');
+document.getElementById('day-popup').addEventListener('click',e=>{if(e.target===document.getElementById('day-popup'))closeDayPopup();});
 function renderUpcoming() {
   const now=new Date();
   const list=state.events.filter(e=>new Date(e.date)>=new Date(now.toDateString())).sort((a,b)=>a.date.localeCompare(b.date));
@@ -1065,17 +1219,50 @@ window.switchGameTab=(tab,btn)=>{
   ['players','games','winrate'].forEach(t=>document.getElementById('game-tab-'+t).style.display=t===tab?'block':'none');
   if(tab==='winrate') renderWinrate();
 };
+function updateMyNameDisplay(){
+  myName=localStorage.getItem('myName')||'김정환';
+  document.querySelectorAll('.my-name-display').forEach(el=>el.textContent=myName);
+  const pre=document.getElementById('my-name-preview');
+  if(pre) pre.textContent=myName;
+}
+window.saveMyName=()=>{
+  const v=document.getElementById('myname-input').value.trim();
+  if(!v){showToast('이름을 입력하세요');return;}
+  localStorage.setItem('myName',v);
+  myName=v;
+  updateMyNameDisplay();
+  closeModal('modal-myname');
+  showToast('이름이 변경되었습니다');
+};
+
 function populatePlayerSelects() {
   const opts='<option value="">선택 안 함</option>'+state.players.map(p=>`<option value="${p.id}">${p.name}(${p.level||''})</option>`).join('');
   const req='<option value="">선택하세요</option>'+state.players.map(p=>`<option value="${p.id}">${p.name}(${p.level||''})</option>`).join('');
-  document.getElementById('game-myPartner').innerHTML=opts;
-  document.getElementById('game-opponent1').innerHTML=req;
-  document.getElementById('game-opponent2').innerHTML=opts;
+  // 게임 모달
+  const my2=document.getElementById('game-my2');
+  const o1=document.getElementById('game-opponent1');
+  const o2=document.getElementById('game-opponent2');
+  if(my2) my2.innerHTML=opts;
+  if(o1) o1.innerHTML=req;
+  if(o2) o2.innerHTML=opts;
+  // 맞대결 분석기
+  updateMatchupSelects();
 }
-window.togglePartnerField=()=>{
+function populateCMSelects(){
+  const opts='<option value="">선택 안 함</option>'+state.players.map(p=>`<option value="${p.id}">${p.name}(${p.level||''})</option>`).join('');
+  const req='<option value="">선택</option>'+state.players.map(p=>`<option value="${p.id}">${p.name}(${p.level||''})</option>`).join('');
+  ['cm-a1','cm-b1','cm-team1-p1','cm-team2-p1'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=req;});
+  ['cm-a2','cm-b2','cm-team1-p2','cm-team2-p2'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+}
+window.toggleGameFields=()=>{
   const isD=document.getElementById('game-matchType').value!=='단식';
-  document.getElementById('my-partner-group').style.display=isD?'block':'none';
+  document.getElementById('my-p2-group').style.display=isD?'block':'none';
   document.getElementById('opp2-group').style.display=isD?'block':'none';
+};
+window.toggleCMFields=()=>{
+  const isD=document.getElementById('cm-matchType').value!=='단식';
+  document.getElementById('cm-a2-group').style.display=isD?'block':'none';
+  document.getElementById('cm-b2-group').style.display=isD?'block':'none';
 };
 let playerSort='fav';
 function setPlayerSort(type,btn){
@@ -1165,43 +1352,206 @@ function renderGames() {
   const pMap={};state.players.forEach(p=>{pMap[p.id]=p;});
   document.getElementById('game-list').innerHTML=state.games.length?state.games.map(g=>{
     const o1=pMap[g.opponent1];const o2=pMap[g.opponent2];
-    const sets=[];
-    if(g.myScore1!==''&&g.oppScore1!=='') sets.push(`${g.myScore1}:${g.oppScore1}`);
-    if(g.myScore2!==''&&g.oppScore2!=='') sets.push(`${g.myScore2}:${g.oppScore2}`);
-    if(g.myScore3!==''&&g.oppScore3!=='') sets.push(`${g.myScore3}:${g.oppScore3}`);
+    const my2=pMap[g.my2];
+    const score=g.myScore1!==''&&g.oppScore1!==''?`${g.myScore1}:${g.oppScore1}`:'';
+    const ourTeam=`${myName}${my2?'+'+my2.name:''}`;
+    const oppTeam=`${o1?o1.name:'?'}${o2?'+'+o2.name:''}`;
     return`<div class="game-card">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span class="badge badge-${g.result==='승'?'승':'패'}">${g.result||'-'}</span>
-        <span style="font-size:13px;font-weight:500;flex:1">${g.date} · ${g.matchType||'단식'}</span>
+        <span style="font-size:13px;font-weight:500;flex:1">${g.date}</span>
+        <span class="type-pill">${g.matchType||'단식'}</span>
         <button class="del-btn" onclick="deleteGame('${g.id}')">✕</button>
       </div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:4px">vs ${o1?o1.name+'('+( o1.level||'')+')':'?'}${o2?' + '+o2.name:''}</div>
-      ${sets.length?`<div style="display:flex;gap:6px;margin-bottom:4px">${sets.map(s=>`<span style="background:var(--gray-light);border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600">${s}</span>`).join('')}</div>`:''}
+      <div style="font-size:13px;color:var(--text2);margin-bottom:4px">
+        <span style="color:var(--green);font-weight:500">${ourTeam}</span>
+        <span style="color:var(--text3);margin:0 6px">vs</span>
+        <span style="color:var(--red);font-weight:500">${oppTeam}</span>
+      </div>
+      ${score?`<div style="font-size:18px;font-weight:700;margin-bottom:4px">${score}</div>`:''}
+      ${g.oppStrength?`<div style="font-size:11px;color:var(--text3)">💪 강점: ${g.oppStrength}</div>`:''}
+      ${g.oppWeakness?`<div style="font-size:11px;color:var(--text3)">🎯 약점: ${g.oppWeakness}</div>`:''}
       ${g.memo?`<div style="font-size:12px;color:var(--text3)">${g.memo}</div>`:''}
     </div>`;
   }).join(''):'<p class="empty-msg">게임 기록이 없습니다</p>';
 }
 window.saveGame=async()=>{
-  const data={date:document.getElementById('game-date').value,matchType:document.getElementById('game-matchType').value,
-    myPartner:document.getElementById('game-myPartner').value,opponent1:document.getElementById('game-opponent1').value,
+  const data={
+    date:document.getElementById('game-date').value,
+    matchType:document.getElementById('game-matchType').value,
+    my2:document.getElementById('game-my2').value,
+    opponent1:document.getElementById('game-opponent1').value,
     opponent2:document.getElementById('game-opponent2').value,
-    myScore1:document.getElementById('my-score1').value,myScore2:document.getElementById('my-score2').value,myScore3:document.getElementById('my-score3').value,
-    oppScore1:document.getElementById('opp-score1').value,oppScore2:document.getElementById('opp-score2').value,oppScore3:document.getElementById('opp-score3').value,
-    result:document.getElementById('game-result').value,memo:document.getElementById('game-memo').value};
+    myScore1:document.getElementById('my-score1').value,
+    oppScore1:document.getElementById('opp-score1').value,
+    result:document.getElementById('game-result').value,
+    oppStrength:document.getElementById('game-opp-strength').value,
+    oppWeakness:document.getElementById('game-opp-weakness').value,
+    memo:document.getElementById('game-memo').value,
+    myName:myName
+  };
   if(!data.date||!data.opponent1){showToast('날짜와 상대방을 선택하세요');return;}
   const item=await addItem('games',data); state.games.unshift(item);
   closeModal('modal-game');
-  ['my-score1','my-score2','my-score3','opp-score1','opp-score2','opp-score3','game-memo'].forEach(id=>document.getElementById(id).value='');
-  renderGames(); renderHome(); showToast('저장');
+  ['my-score1','opp-score1','game-opp-strength','game-opp-weakness','game-memo'].forEach(id=>document.getElementById(id).value='');
+  renderGames(); renderHome(); renderCalendar(); showToast('저장');
 };
-window.deleteGame=async id=>{if(!confirm('삭제?'))return;await delItem('games',id);state.games=state.games.filter(g=>g.id!==id);renderGames();renderHome();showToast('삭제');};
-// 점수차 계산 함수
-function calcScoreDiff(g) {
-  const sets=[];
-  [[g.myScore1,g.oppScore1],[g.myScore2,g.oppScore2],[g.myScore3,g.oppScore3]].forEach(([m,o])=>{
-    if(m!==''&&m!==undefined&&o!==''&&o!==undefined) sets.push(Number(m)-Number(o));
+window.deleteGame=async id=>{if(!confirm('삭제?'))return;await delItem('games',id);state.games=state.games.filter(g=>g.id!==id);renderGames();renderHome();renderCalendar();showToast('삭제');};
+
+// 클럽매치
+let currentClubTab='games';
+window.switchClubTab=(tab,btn)=>{
+  currentClubTab=tab;
+  document.querySelectorAll('#page-clubmatch .filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('clubmatch-tab-games').style.display=tab==='games'?'block':'none';
+  document.getElementById('clubmatch-tab-analysis').style.display=tab==='analysis'?'block':'none';
+  if(tab==='analysis') populateCMSelects();
+};
+function renderClubMatches(){
+  const pMap={};state.players.forEach(p=>{pMap[p.id]=p;});
+  const el=document.getElementById('clubmatch-list');
+  if(!el) return;
+  el.innerHTML=state.clubmatches.length?state.clubmatches.map(g=>{
+    const a1=pMap[g.a1];const a2=pMap[g.a2];const b1=pMap[g.b1];const b2=pMap[g.b2];
+    const aTeam=`${a1?a1.name:'?'}${a2?'+'+a2.name:''}`;
+    const bTeam=`${b1?b1.name:'?'}${b2?'+'+b2.name:''}`;
+    const score=g.scoreA!==''&&g.scoreB!==''?`${g.scoreA}:${g.scoreB}`:'';
+    return`<div class="game-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:500;flex:1">${g.date}</span>
+        <span class="type-pill">${g.matchType||'단식'}</span>
+        <button class="del-btn" onclick="deleteClubMatch('${g.id}')">✕</button>
+      </div>
+      <div style="font-size:13px;margin-bottom:4px">
+        <span style="color:var(--green);font-weight:500">${aTeam}</span>
+        <span style="color:var(--text3);margin:0 6px">vs</span>
+        <span style="color:var(--red);font-weight:500">${bTeam}</span>
+      </div>
+      ${score?`<div style="font-size:18px;font-weight:700;margin-bottom:4px">${score} <span style="font-size:12px;font-weight:400;color:var(--text3)">${Number(g.scoreA)>Number(g.scoreB)?aTeam+' 승':bTeam+' 승'}</span></div>`:''}
+      ${g.memo?`<div style="font-size:12px;color:var(--text3)">${g.memo}</div>`:''}
+    </div>`;
+  }).join(''):'<p class="empty-msg">클럽매치 기록이 없습니다</p>';
+}
+window.saveClubMatch=async()=>{
+  const data={
+    date:document.getElementById('cm-date').value,
+    matchType:document.getElementById('cm-matchType').value,
+    a1:document.getElementById('cm-a1').value,a2:document.getElementById('cm-a2').value,
+    b1:document.getElementById('cm-b1').value,b2:document.getElementById('cm-b2').value,
+    scoreA:document.getElementById('cm-score-a').value,scoreB:document.getElementById('cm-score-b').value,
+    memo:document.getElementById('cm-memo').value
+  };
+  if(!data.date||!data.a1||!data.b1){showToast('날짜와 선수를 선택하세요');return;}
+  const item=await addItem('clubmatches',data);state.clubmatches.unshift(item);
+  closeModal('modal-clubmatch');
+  ['cm-score-a','cm-score-b','cm-memo'].forEach(id=>document.getElementById(id).value='');
+  renderClubMatches();showToast('저장');
+};
+window.deleteClubMatch=async id=>{if(!confirm('삭제?'))return;await delItem('clubmatches',id);state.clubmatches=state.clubmatches.filter(g=>g.id!==id);renderClubMatches();showToast('삭제');};
+
+window.analyzeClubMatch=()=>{
+  const pMap={};state.players.forEach(p=>{pMap[p.id]=p;});
+  const t1p1=document.getElementById('cm-team1-p1').value;
+  const t1p2=document.getElementById('cm-team1-p2').value;
+  const t2p1=document.getElementById('cm-team2-p1').value;
+  const t2p2=document.getElementById('cm-team2-p2').value;
+  if(!t1p1||!t2p1){showToast('각 팀 선수 1명 이상 선택하세요');return;}
+  const resEl=document.getElementById('clubmatch-analysis-result');
+
+  // 팀1 선수들과 팀2 선수들이 포함된 경기 검색
+  const t1ids=[t1p1,t1p2].filter(Boolean);
+  const t2ids=[t2p1,t2p2].filter(Boolean);
+
+  const relevant=state.clubmatches.filter(g=>{
+    const aIds=[g.a1,g.a2].filter(Boolean);
+    const bIds=[g.b1,g.b2].filter(Boolean);
+    const t1inA=t1ids.every(id=>aIds.includes(id));
+    const t1inB=t1ids.every(id=>bIds.includes(id));
+    const t2inA=t2ids.every(id=>aIds.includes(id));
+    const t2inB=t2ids.every(id=>bIds.includes(id));
+    return (t1inA&&t2inB)||(t1inB&&t2inA);
   });
-  return sets.length?Math.round(sets.reduce((a,b)=>a+b,0)/sets.length):0;
+
+  // 개인 게임 기록도 포함 (내 게임 기록에서 해당 선수들)
+  const myGames=state.games.filter(g=>{
+    const oIds=[g.opponent1,g.opponent2].filter(Boolean);
+    const myTeam=[g.my2].filter(Boolean);
+    // 팀1에 내가 포함되고 팀2가 상대인 경우
+    if(t1ids.includes('me')||t1ids.some(id=>id===g.my2)){
+      return t2ids.some(id=>oIds.includes(id));
+    }
+    return false;
+  });
+
+  const t1name=(pMap[t1p1]?.name||'?')+(t1p2?'+'+( pMap[t1p2]?.name||'?'):'');
+  const t2name=(pMap[t2p1]?.name||'?')+(t2p2?'+'+( pMap[t2p2]?.name||'?'):'');
+
+  if(!relevant.length&&!myGames.length){
+    // 개인 기록도 없으면 선수 개별 승률로 예측
+    const allPlayers=[...t1ids,...t2ids].map(id=>pMap[id]).filter(Boolean);
+    resEl.innerHTML=`<div class="card" style="text-align:center;padding:20px">
+      <div style="font-size:13px;color:var(--text3);margin-bottom:8px">직접 대결 기록 없음</div>
+      <div style="font-size:13px;font-weight:500">데이터 부족으로 예측 불가</div>
+      <div style="font-size:12px;color:var(--text3);margin-top:6px">클럽매치 기록을 쌓으면 분석이 가능해집니다</div>
+    </div>`;
+    return;
+  }
+
+  let t1wins=0,total=relevant.length;
+  relevant.forEach(g=>{
+    const aIds=[g.a1,g.a2].filter(Boolean);
+    const t1inA=t1ids.every(id=>aIds.includes(id));
+    const aWin=Number(g.scoreA)>Number(g.scoreB);
+    if(t1inA&&aWin) t1wins++;
+    else if(!t1inA&&!aWin) t1wins++;
+  });
+  const t1rate=total?Math.round(t1wins/total*100):50;
+  const diffs=relevant.map(g=>{
+    const aIds=[g.a1,g.a2].filter(Boolean);
+    const t1inA=t1ids.every(id=>aIds.includes(id));
+    const diff=Number(g.scoreA)-Number(g.scoreB);
+    return t1inA?diff:-diff;
+  });
+  const avgDiff=diffs.length?Math.round(diffs.reduce((a,b)=>a+b,0)/diffs.length):0;
+  const predictRate=Math.min(95,Math.max(5,Math.round(t1rate*0.6+(t1rate>50?60:40)*0.2+(50+avgDiff*2)*0.2)));
+  const msg=predictRate>=70?'압도적 우세 💪':predictRate>=55?'약간 우세 ⚡':predictRate>=45?'박빙 승부 🏸':'열세 🔥';
+
+  resEl.innerHTML=`
+    <div class="predict-card" style="margin-bottom:12px">
+      <div style="font-size:12px;opacity:0.8;margin-bottom:8px">⚡ ${t1name} vs ${t2name}</div>
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:10px">
+        <div style="text-align:center">
+          <div style="font-size:24px;font-weight:800">${predictRate}%</div>
+          <div style="font-size:11px;opacity:0.8">${t1name}</div>
+        </div>
+        <div style="font-size:13px;opacity:0.7">vs</div>
+        <div style="text-align:center">
+          <div style="font-size:24px;font-weight:800">${100-predictRate}%</div>
+          <div style="font-size:11px;opacity:0.8">${t2name}</div>
+        </div>
+      </div>
+      <div class="predict-meter"><div class="predict-fill" style="width:${predictRate}%"></div></div>
+      <div style="font-size:13px;margin-top:8px;opacity:0.9">${msg} · 평균점수차 ${avgDiff>=0?'+':''}${avgDiff} · ${total}경기 기반</div>
+    </div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:6px">최근 대결 기록</div>
+    ${relevant.slice(0,5).map(g=>{
+      const aIds=[g.a1,g.a2].filter(Boolean);
+      const t1inA=t1ids.every(id=>aIds.includes(id));
+      const aWin=Number(g.scoreA)>Number(g.scoreB);
+      const t1won=(t1inA&&aWin)||(!t1inA&&!aWin);
+      return`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+        <span class="badge badge-${t1won?'승':'패'}">${t1won?t1name+' 승':t2name+' 승'}</span>
+        <span style="font-size:12px;flex:1">${g.date} · ${g.matchType}</span>
+        <span style="font-size:12px;font-weight:600">${g.scoreA}:${g.scoreB}</span>
+      </div>`;
+    }).join('')}`;
+};
+// 점수차 계산 (1세트 기준)
+function calcScoreDiff(g) {
+  if(g.myScore1!==''&&g.myScore1!==undefined&&g.oppScore1!==''&&g.oppScore1!==undefined){
+    return Number(g.myScore1)-Number(g.oppScore1);
+  }
+  return 0;
 }
 
 // 종합점수 계산 (승률 70% + 평균점수차 30%)
@@ -1396,14 +1746,11 @@ window.analyzeMatchup = () => {
 
   // 세트별 상세
   const setDetail=filtered.slice(0,5).map(g=>{
-    const sets=[];
-    [[g.myScore1,g.oppScore1],[g.myScore2,g.oppScore2],[g.myScore3,g.oppScore3]].forEach(([m,o])=>{
-      if(m!==''&&m!==undefined&&o!==''&&o!==undefined) sets.push(`${m}:${o}`);
-    });
+    const score=g.myScore1!==''&&g.oppScore1!==''?`${g.myScore1}:${g.oppScore1}`:'';
     return`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
       <span class="badge badge-${g.result==='승'?'승':'패'}">${g.result}</span>
-      <span style="font-size:12px;flex:1">${g.date} · ${g.matchType||'단식'}</span>
-      <span style="font-size:12px;color:var(--text3)">${sets.join(' / ')}</span>
+      <span style="font-size:12px;flex:1">${g.date} · <span class="type-pill">${g.matchType||'단식'}</span></span>
+      <span style="font-size:13px;font-weight:700;color:var(--text2)">${score}</span>
     </div>`;
   }).join('');
 
