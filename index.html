@@ -54,8 +54,8 @@ body{
 #loading .spinner{width:36px;height:36px;border:3px solid var(--green-light);border-top-color:var(--green);border-radius:50%;animation:spin 0.8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-.nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:2px solid var(--green-light);display:grid;grid-template-columns:repeat(8,1fr);z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(29,158,117,0.09)}
-.nav-btn{display:flex;flex-direction:column;align-items:center;padding:7px 0 5px;gap:2px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:9px;font-family:inherit}
+.nav{position:fixed;bottom:0;left:0;right:0;background:var(--white);border-top:2px solid var(--green-light);display:flex;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;z-index:100;padding-bottom:env(safe-area-inset-bottom);box-shadow:0 -2px 10px rgba(29,158,117,0.09)}
+.nav-btn{display:flex;flex-direction:column;align-items:center;padding:7px 10px 5px;gap:2px;background:none;border:none;cursor:pointer;color:var(--text3);font-size:9px;font-family:inherit;flex-shrink:0;min-width:56px}
 .nav-btn.active{color:var(--green)}
 .nav-btn svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 
@@ -200,6 +200,7 @@ body{
 .day-popup{position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:300;display:none;align-items:center;justify-content:center}
 .day-popup.open{display:flex}
 .day-popup-box{background:var(--white);border-radius:16px;padding:20px;width:90%;max-width:400px;max-height:80vh;overflow-y:auto}
+.match-type-tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .accordion-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;margin-bottom:6px}
 .accordion-header.open{border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:0;border-bottom:none}
 .accordion-arrow{font-size:14px;color:var(--text3);transition:transform 0.2s}
@@ -335,6 +336,33 @@ body{
   <div id="memo-tab-memo" style="display:none">
     <div class="section-header"><div style="font-size:14px;font-weight:600">메모</div><button class="btn btn-green btn-sm" onclick="openModal('modal-memo')">+ 추가</button></div>
     <div id="memo-list"></div>
+  </div>
+</div>
+
+<!-- 클럽매치 -->
+<div id="page-clubmatch" class="page">
+  <div class="page-banner"><div class="page-banner-title">👥 클럽매치</div><button class="btn btn-white btn-sm" onclick="openModal('modal-clubmatch')">+ 기록</button></div>
+  <div class="filter-tabs">
+    <button class="filter-tab active" onclick="switchClubTab('games',this)">경기 기록</button>
+    <button class="filter-tab" onclick="switchClubTab('analysis',this)">전력 분석</button>
+  </div>
+  <div id="clubmatch-tab-games"><div id="clubmatch-list"></div></div>
+  <div id="clubmatch-tab-analysis" style="display:none">
+    <div style="font-size:13px;color:var(--text3);margin-bottom:12px">멤버 조합별 예상 승률을 분석합니다</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:6px">🔵 A팀</div>
+        <div class="form-group" style="margin-bottom:6px"><label>선수 1</label><select id="cm-team1-p1"><option value="">선택</option></select></div>
+        <div class="form-group" style="margin-bottom:0"><label>선수 2</label><select id="cm-team1-p2"><option value="">선택 안 함</option></select></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:6px">🔴 B팀</div>
+        <div class="form-group" style="margin-bottom:6px"><label>선수 1</label><select id="cm-team2-p1"><option value="">선택</option></select></div>
+        <div class="form-group" style="margin-bottom:0"><label>선수 2</label><select id="cm-team2-p2"><option value="">선택 안 함</option></select></div>
+      </div>
+    </div>
+    <button class="btn btn-green" style="width:100%;margin-bottom:12px" onclick="analyzeClubMatch()">조합 분석</button>
+    <div id="clubmatch-analysis-result"></div>
   </div>
 </div>
 
@@ -590,6 +618,44 @@ body{
   </div>
 </div>
 
+<!-- 클럽매치 모달 -->
+<div class="modal-overlay" id="modal-clubmatch">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-title">클럽매치 기록</div>
+    <div class="form-row">
+      <div class="form-group"><label>날짜</label><input type="date" id="cm-date"></div>
+      <div class="form-group"><label>경기 유형</label>
+        <select id="cm-matchType" onchange="toggleCMFields()">
+          <option value="단식">단식</option><option value="남복">남복</option><option value="여복">여복</option><option value="혼복">혼복</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px">
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:6px">🔵 A팀</div>
+        <div class="form-group" style="margin-bottom:6px"><label>선수 1</label><select id="cm-a1"><option value="">선택</option></select></div>
+        <div class="form-group" id="cm-a2-group" style="display:none;margin-bottom:0"><label>선수 2</label><select id="cm-a2"><option value="">선택 안 함</option></select></div>
+      </div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:6px">🔴 B팀</div>
+        <div class="form-group" style="margin-bottom:6px"><label>선수 1</label><select id="cm-b1"><option value="">선택</option></select></div>
+        <div class="form-group" id="cm-b2-group" style="display:none;margin-bottom:0"><label>선수 2</label><select id="cm-b2"><option value="">선택 안 함</option></select></div>
+      </div>
+    </div>
+    <div style="background:var(--gray-light);border-radius:var(--radius-sm);padding:10px;margin-bottom:8px">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:6px;text-align:center">
+        <div style="font-size:11px;font-weight:600;color:var(--green)">A팀</div>
+        <div style="font-size:11px;font-weight:600;color:var(--red)">B팀</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <input type="number" id="cm-score-a" min="0" max="30" placeholder="0" style="text-align:center;font-size:20px;font-weight:700;padding:12px">
+        <input type="number" id="cm-score-b" min="0" max="30" placeholder="0" style="text-align:center;font-size:20px;font-weight:700;padding:12px">
+      </div>
+    </div>
+    <div class="form-group"><label>메모</label><input type="text" id="cm-memo"></div>
+    <div class="btn-row"><button class="btn btn-green" onclick="saveClubMatch()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-clubmatch')">취소</button></div>
+  </div>
+</div>
+
 <!-- 네비 -->
 <nav class="nav">
   <button class="nav-btn active" onclick="showPage('home',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>홈</button>
@@ -600,6 +666,7 @@ body{
   <button class="nav-btn" onclick="showPage('youtube',this)"><svg viewBox="0 0 24 24"><path d="M22.54 6.42a2.78 2.78 0 00-1.95-1.96C18.88 4 12 4 12 4s-6.88 0-8.59.46A2.78 2.78 0 001.46 6.42 29 29 0 001 12a29 29 0 00.46 5.58A2.78 2.78 0 003.41 19.6C5.12 20 12 20 12 20s6.88 0 8.59-.46a2.78 2.78 0 001.95-1.95A29 29 0 0023 12a29 29 0 00-.46-5.58z"/><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" fill="currentColor"/></svg>유튜브</button>
   <button class="nav-btn" onclick="showPage('memo',this)"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>장비</button>
   <button class="nav-btn" onclick="showPage('game',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>게임</button>
+  <button class="nav-btn" onclick="showPage('clubmatch',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>클럽매치</button>
 </nav>
 <div style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--text3);opacity:0.6;pointer-events:none">© Copyright 김정환</div>
 
@@ -626,7 +693,7 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
-let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[] };
+let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[], clubmatches:[] };
 let ratings = { condition:0, focusRating:0 };
 let calYear = new Date().getFullYear(), calMonth = new Date().getMonth();
 let logFilter = '전체', ytFilter = '전체', currentGameTab = 'players';
@@ -685,11 +752,12 @@ async function loadAll() {
   document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('game-date').value = new Date().toISOString().split('T')[0];
   try {
-    const [logs,routines,events,youtube,memos,equipment,players,games] = await Promise.all([
+    const [logs,routines,events,youtube,memos,equipment,players,games,clubmatches] = await Promise.all([
       getAll('logs'), getAll('routines'), getAll('events'), getAll('youtube'),
-      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'),
+      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'), getAll('clubmatches'),
     ]);
     state.logs = logs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+    state.clubmatches = (clubmatches||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     state.routines = routines;
     if(!state.routines.length) await initDefaultRoutines();
     state.events = events;
@@ -724,7 +792,8 @@ async function initDefaultRoutines() {
 function renderAll() {
   renderHome(); renderLogList(); renderRoutines(); renderCalendar();
   renderStats(); renderYoutube(); renderEquipment(); renderMemos();
-  renderPlayers(); renderGames(); populatePlayerSelects();
+  renderPlayers(); renderGames(); populatePlayerSelects(); renderClubMatches(); populateCMSelects();
+  const cmDate=document.getElementById('cm-date');if(cmDate)cmDate.value=new Date().toISOString().split('T')[0];
 }
 
 // ── UI 공통 ────────────────────────────────────────────────
@@ -1135,7 +1204,133 @@ function populatePlayerSelects() {
   document.getElementById('game-myPartner').innerHTML=opts;
   document.getElementById('game-opponent1').innerHTML=req;
   document.getElementById('game-opponent2').innerHTML=opts;
+  populateCMSelects();
 }
+function populateCMSelects(){
+  const opts='<option value="">선택 안 함</option>'+state.players.map(p=>`<option value="${p.id}">${p.name}(${p.level||''})</option>`).join('');
+  const req='<option value="">선택</option>'+state.players.map(p=>`<option value="${p.id}">${p.name}(${p.level||''})</option>`).join('');
+  ['cm-a1','cm-b1','cm-team1-p1','cm-team2-p1'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=req;});
+  ['cm-a2','cm-b2','cm-team1-p2','cm-team2-p2'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML=opts;});
+}
+window.toggleCMFields=function(){
+  const isD=document.getElementById('cm-matchType').value!=='단식';
+  const a2=document.getElementById('cm-a2-group');const b2=document.getElementById('cm-b2-group');
+  if(a2)a2.style.display=isD?'block':'none';
+  if(b2)b2.style.display=isD?'block':'none';
+};
+let currentClubTab='games';
+window.switchClubTab=function(tab,btn){
+  currentClubTab=tab;
+  document.querySelectorAll('#page-clubmatch .filter-tab').forEach(b=>b.classList.remove('active'));btn.classList.add('active');
+  document.getElementById('clubmatch-tab-games').style.display=tab==='games'?'block':'none';
+  document.getElementById('clubmatch-tab-analysis').style.display=tab==='analysis'?'block':'none';
+  if(tab==='analysis')populateCMSelects();
+};
+function renderClubMatches(){
+  const pMap={};state.players.forEach(p=>{pMap[p.id]=p;});
+  const el=document.getElementById('clubmatch-list');if(!el)return;
+  el.innerHTML=state.clubmatches.length?state.clubmatches.map(g=>{
+    const a1=pMap[g.a1];const a2=pMap[g.a2];const b1=pMap[g.b1];const b2=pMap[g.b2];
+    const aTeam=(a1?a1.name:'?')+(a2?'+'+a2.name:'');
+    const bTeam=(b1?b1.name:'?')+(b2?'+'+b2.name:'');
+    const score=g.scoreA!==''&&g.scoreB!==''&&g.scoreA!==undefined?g.scoreA+':'+g.scoreB:'';
+    const aWin=Number(g.scoreA)>Number(g.scoreB);
+    return`<div class="game-card">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:13px;font-weight:500;flex:1">${g.date} · ${g.matchType||'단식'}</span>
+        <button class="del-btn" onclick="deleteClubMatch('${g.id}')">✕</button>
+      </div>
+      <div style="font-size:13px;margin-bottom:4px">
+        <span style="color:var(--green);font-weight:500">${aTeam}</span>
+        <span style="color:var(--text3);margin:0 6px">vs</span>
+        <span style="color:var(--red);font-weight:500">${bTeam}</span>
+      </div>
+      ${score?`<div style="font-size:18px;font-weight:700">${score} <span style="font-size:12px;font-weight:400;color:var(--text3)">${aWin?aTeam:bTeam} 승</span></div>`:''}
+      ${g.memo?`<div style="font-size:12px;color:var(--text3)">${g.memo}</div>`:''}
+    </div>`;
+  }).join(''):'<p class="empty-msg">클럽매치 기록이 없습니다</p>';
+}
+window.saveClubMatch=async function(){
+  const data={
+    date:document.getElementById('cm-date').value,
+    matchType:document.getElementById('cm-matchType').value,
+    a1:document.getElementById('cm-a1').value,a2:document.getElementById('cm-a2').value,
+    b1:document.getElementById('cm-b1').value,b2:document.getElementById('cm-b2').value,
+    scoreA:document.getElementById('cm-score-a').value,scoreB:document.getElementById('cm-score-b').value,
+    memo:document.getElementById('cm-memo').value
+  };
+  if(!data.date||!data.a1||!data.b1){showToast('날짜와 선수를 선택하세요');return;}
+  const item=await addItem('clubmatches',data);state.clubmatches.unshift(item);
+  closeModal('modal-clubmatch');
+  ['cm-score-a','cm-score-b','cm-memo'].forEach(id=>document.getElementById(id).value='');
+  renderClubMatches();showToast('저장');
+};
+window.deleteClubMatch=async function(id){
+  if(!confirm('삭제?'))return;
+  await delItem('clubmatches',id);state.clubmatches=state.clubmatches.filter(g=>g.id!==id);
+  renderClubMatches();showToast('삭제');
+};
+window.analyzeClubMatch=function(){
+  const pMap={};state.players.forEach(p=>{pMap[p.id]=p;});
+  const t1p1=document.getElementById('cm-team1-p1').value;
+  const t1p2=document.getElementById('cm-team1-p2').value;
+  const t2p1=document.getElementById('cm-team2-p1').value;
+  const t2p2=document.getElementById('cm-team2-p2').value;
+  if(!t1p1||!t2p1){showToast('각 팀 선수 1명 이상 선택하세요');return;}
+  const resEl=document.getElementById('clubmatch-analysis-result');
+  const t1ids=[t1p1,t1p2].filter(Boolean);
+  const t2ids=[t2p1,t2p2].filter(Boolean);
+  const relevant=state.clubmatches.filter(g=>{
+    const aIds=[g.a1,g.a2].filter(Boolean);
+    const bIds=[g.b1,g.b2].filter(Boolean);
+    const t1inA=t1ids.every(id=>aIds.includes(id));
+    const t1inB=t1ids.every(id=>bIds.includes(id));
+    const t2inA=t2ids.every(id=>aIds.includes(id));
+    const t2inB=t2ids.every(id=>bIds.includes(id));
+    return (t1inA&&t2inB)||(t1inB&&t2inA);
+  });
+  const t1name=(pMap[t1p1]?.name||'?')+(t1p2?'+'+(pMap[t1p2]?.name||'?'):'');
+  const t2name=(pMap[t2p1]?.name||'?')+(t2p2?'+'+(pMap[t2p2]?.name||'?'):'');
+  if(!relevant.length){
+    resEl.innerHTML=`<div class="card" style="text-align:center;padding:20px"><div style="font-size:13px;color:var(--text3);margin-bottom:8px">직접 대결 기록 없음</div><div style="font-size:12px;color:var(--text3)">클럽매치 기록을 쌓으면 분석이 가능합니다</div></div>`;
+    return;
+  }
+  let t1wins=0;
+  const diffs=relevant.map(g=>{
+    const aIds=[g.a1,g.a2].filter(Boolean);
+    const t1inA=t1ids.every(id=>aIds.includes(id));
+    const aWin=Number(g.scoreA)>Number(g.scoreB);
+    if((t1inA&&aWin)||(!t1inA&&!aWin))t1wins++;
+    const diff=Number(g.scoreA)-Number(g.scoreB);
+    return t1inA?diff:-diff;
+  });
+  const total=relevant.length;
+  const t1rate=Math.round(t1wins/total*100);
+  const avgDiff=Math.round(diffs.reduce((a,b)=>a+b,0)/diffs.length);
+  const predictRate=Math.min(95,Math.max(5,Math.round(t1rate*0.7+(50+avgDiff*2)*0.3)));
+  const msg=predictRate>=70?'압도적 우세 💪':predictRate>=55?'약간 우세 ⚡':predictRate>=45?'박빙 🏸':'열세 🔥';
+  resEl.innerHTML=`<div class="predict-card">
+    <div style="font-size:12px;opacity:0.8;margin-bottom:8px">⚡ ${t1name} vs ${t2name}</div>
+    <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:10px">
+      <div style="text-align:center"><div style="font-size:24px;font-weight:800">${predictRate}%</div><div style="font-size:11px;opacity:0.8">${t1name}</div></div>
+      <div style="font-size:13px;opacity:0.7">vs</div>
+      <div style="text-align:center"><div style="font-size:24px;font-weight:800">${100-predictRate}%</div><div style="font-size:11px;opacity:0.8">${t2name}</div></div>
+    </div>
+    <div class="predict-meter"><div class="predict-fill" style="width:${predictRate}%"></div></div>
+    <div style="font-size:13px;margin-top:8px;opacity:0.9">${msg} · 평균점수차 ${avgDiff>=0?'+':''}${avgDiff} · ${total}경기 기반</div>
+  </div>
+  ${relevant.slice(0,5).map(g=>{
+    const aIds=[g.a1,g.a2].filter(Boolean);
+    const t1inA=t1ids.every(id=>aIds.includes(id));
+    const aWin=Number(g.scoreA)>Number(g.scoreB);
+    const t1won=(t1inA&&aWin)||(!t1inA&&!aWin);
+    return`<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border)">
+      <span class="badge badge-${t1won?'승':'패'}">${t1won?t1name+' 승':t2name+' 승'}</span>
+      <span style="font-size:12px;flex:1">${g.date}</span>
+      <span style="font-size:13px;font-weight:700">${g.scoreA}:${g.scoreB}</span>
+    </div>`;
+  }).join('')}`;
+};
 window.togglePartnerField=()=>{
   const isD=document.getElementById('game-matchType').value!=='단식';
   document.getElementById('my-partner-group').style.display=isD?'block':'none';
