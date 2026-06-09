@@ -156,6 +156,7 @@ body{
 .dday-soon{background:#FAECE7;color:#993C1D}
 .dday-near{background:var(--amber-light);color:#854F0B}
 .dday-far{background:var(--green-light);color:var(--green-dark)}
+.dday-past{background:var(--gray-light);color:var(--gray)}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--white);border-radius:16px 16px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:640px;max-height:90vh;overflow-y:auto}
@@ -1074,18 +1075,35 @@ window.closeDayPopup=function(){document.getElementById('day-popup').classList.r
 document.getElementById('day-popup').addEventListener('click',function(e){if(e.target===this)closeDayPopup();});
 function renderUpcoming() {
   const now=new Date();
-  const list=state.events.filter(e=>new Date(e.date)>=new Date(now.toDateString())).sort((a,b)=>a.date.localeCompare(b.date));
-  document.getElementById('upcoming-list').innerHTML=list.length?list.map(e=>{
+  const monthStr=`${calYear}-${String(calMonth+1).padStart(2,'0')}`;
+  // 현재 보이는 달의 일정 전체 (지난 것 포함)
+  const list=state.events.filter(e=>e.date.startsWith(monthStr)).sort((a,b)=>a.date.localeCompare(b.date));
+  const past=list.filter(e=>new Date(e.date)<new Date(now.toDateString()));
+  const future=list.filter(e=>new Date(e.date)>=new Date(now.toDateString()));
+  function evItem(e){
     const diff=Math.ceil((new Date(e.date)-new Date(now.toDateString()))/86400000);
-    const cls=diff===0?'dday-today':diff<=3?'dday-soon':diff<=7?'dday-near':'dday-far';
-    return`<div class="upcoming-item" style="cursor:pointer" onclick="openEditEvent('${e.id}')">
-      <span class="dday ${cls}">${diff===0?'오늘':diff===1?'내일':'D-'+diff}</span>
+    const cls=diff===0?'dday-today':diff>0?(diff<=3?'dday-soon':diff<=7?'dday-near':'dday-far'):'dday-past';
+    const label=diff===0?'오늘':diff===1?'내일':diff>0?'D-'+diff:'D+'+Math.abs(diff);
+    return`<div class="upcoming-item" style="cursor:pointer${diff<0?';opacity:0.6':''}" onclick="openEditEvent('${e.id}')">
+      <span class="dday ${cls}">${label}</span>
       <div class="upcoming-info"><div style="font-size:13px;font-weight:500">${e.title}</div>
       <div style="font-size:11px;color:var(--text3)">${e.date}${e.memo?' · '+e.memo:''}</div></div>
       <span class="badge badge-${e.type}">${e.type}</span>
       <button class="del-btn" onclick="event.stopPropagation();deleteEvent('${e.id}')">✕</button></div>`;
-  }).join(''):'<p class="empty-msg">다가오는 일정이 없습니다</p>';
+  }
+  let html='';
+  if(future.length) html+=future.map(evItem).join('');
+  if(past.length) html+=`<div id="past-events-wrap">
+    <button class="btn btn-outline btn-sm" style="width:100%;margin:8px 0;font-size:12px" onclick="togglePastEvents(this)">지난 일정 ${past.length}개 보기 ▾</button>
+    <div id="past-events-list" style="display:none">${past.map(evItem).join('')}</div>
+  </div>`;
+  document.getElementById('upcoming-list').innerHTML=html||'<p class="empty-msg">이번 달 일정이 없습니다</p>';
 }
+window.togglePastEvents=function(btn){
+  const el=document.getElementById('past-events-list');
+  if(el.style.display==='none'){el.style.display='block';btn.textContent='지난 일정 접기 ▲';}
+  else{el.style.display='none';const n=el.querySelectorAll('.upcoming-item').length;btn.textContent='지난 일정 '+n+'개 보기 ▾';}
+};
 window.prevMonth=()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();};
 window.nextMonth=()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();};
 window.openAddEvent = ds => { document.getElementById('ev-date').value=ds||''; document.getElementById('ev-title').value=''; document.getElementById('ev-memo').value=''; openModal('modal-event'); };
@@ -1748,6 +1766,11 @@ function updateBackBtn(){
   const btn=document.getElementById('back-btn');
   if(btn) btn.style.display=pageHistory.length?'flex':'none';
 }
+window.toggleRlogMore=function(btn){
+  const el=document.getElementById('rlog-more');
+  if(el.style.display==='none'){el.style.display='block';btn.textContent='접기 ▲';}
+  else{el.style.display='none';btn.textContent='더 보기 ('+(el.querySelectorAll('.card').length)+'개) ▾';}
+};
 window.goBack=function(){
   if(!pageHistory.length)return;
   const prev=pageHistory.pop();
@@ -1780,17 +1803,23 @@ window.loadRoutineLog=function(date){setRoutineDate(date);showPage('routine',doc
 function renderRoutineLogHistory(){
   const el=document.getElementById('routine-log-history');if(!el)return;
   if(!state.routineLogs.length){el.innerHTML='<p class="empty-msg">루틴 기록이 없습니다</p>';return;}
-  el.innerHTML=state.routineLogs.slice(0,10).map(l=>`
-    <div class="card" style="cursor:pointer;padding:10px 12px" onclick="loadRoutineLog('${l.date}')">
+  function rlogCard(l){
+    const r=Number(l.rate)||0;
+    const col=r>=80?'var(--green)':r>=50?'var(--amber)':'var(--red)';
+    return`<div class="card" style="cursor:pointer;padding:10px 12px" onclick="loadRoutineLog('${l.date}')">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span style="font-size:13px;font-weight:500;flex:1">${l.date}</span>
-        <span style="font-size:14px;font-weight:700;color:${(Number(l.rate)||0)>=80?'var(--green)':(Number(l.rate)||0)>=50?'var(--amber)':'var(--red)'}">${Number(l.rate)||0}%</span>
+        <span style="font-size:14px;font-weight:700;color:${col}">${r}%</span>
       </div>
       <div style="height:6px;background:var(--gray-light);border-radius:3px;overflow:hidden">
-        <div style="height:6px;border-radius:3px;background:${(Number(l.rate)||0)>=80?'var(--green)':(Number(l.rate)||0)>=50?'var(--amber)':'var(--red)'};width:${Number(l.rate)||0}%"></div>
+        <div style="height:6px;border-radius:3px;background:${col};width:${r}%"></div>
       </div>
       <div style="font-size:11px;color:var(--text3);margin-top:4px">${l.done||0}/${l.total||0} 완료</div>
-    </div>`).join('');
+    </div>`;
+  }
+  const show3=state.routineLogs.slice(0,3).map(rlogCard).join('');
+  const more=state.routineLogs.length>3?state.routineLogs.slice(3).map(rlogCard).join(''):'';
+  el.innerHTML=show3+(more?`<div id="rlog-more" style="display:none">${more}</div><button class="btn btn-outline btn-sm" style="width:100%;margin-top:6px" onclick="toggleRlogMore(this)">더 보기 (${state.routineLogs.length-3}개) ▾</button>`:'');
 }
 </script>
 </body>
