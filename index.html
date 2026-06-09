@@ -185,6 +185,11 @@ body{
 .winrate-fill{height:8px;border-radius:4px;background:var(--green)}
 .winrate-fill.low{background:var(--red)}
 .logout-btn{background:none;border:1px solid rgba(255,255,255,0.3);color:rgba(255,255,255,0.85);border-radius:20px;padding:4px 12px;font-size:11px;cursor:pointer;font-family:inherit}
+.sort-btn{padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--white);font-size:12px;cursor:pointer;font-family:inherit;color:var(--text2);white-space:nowrap}
+.sort-btn.active{background:var(--green);border-color:var(--green);color:#fff}
+.player-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.player-grid-header{font-size:11px;font-weight:600;color:var(--text3);padding:6px 4px;display:flex;align-items:center;gap:4px}
+.fav-btn{background:none;border:none;cursor:pointer;font-size:18px;padding:2px;line-height:1;flex-shrink:0}
 .accordion-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;margin-bottom:6px;transition:background 0.15s}
 .accordion-header:hover{background:var(--bg)}
 .accordion-header.open{border-bottom-left-radius:0;border-bottom-right-radius:0;margin-bottom:0;border-bottom:none}
@@ -326,6 +331,14 @@ body{
   </div>
   <div id="game-tab-players">
     <div class="section-header"><div style="font-size:14px;font-weight:600">상대방 목록</div><button class="btn btn-green btn-sm" onclick="openModal('modal-player')">+ 추가</button></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">
+      <button class="sort-btn active" id="sort-fav" onclick="setPlayerSort('fav',this)">⭐ 즐겨찾기</button>
+      <button class="sort-btn" onclick="setPlayerSort('club',this)">클럽별</button>
+      <button class="sort-btn" onclick="setPlayerSort('gender',this)">성별</button>
+      <button class="sort-btn" onclick="setPlayerSort('level-asc',this)">급수↑</button>
+      <button class="sort-btn" onclick="setPlayerSort('level-desc',this)">급수↓</button>
+      <button class="sort-btn" onclick="setPlayerSort('name',this)">이름순</button>
+    </div>
     <div id="player-list"></div>
   </div>
   <div id="game-tab-games" style="display:none">
@@ -1064,19 +1077,70 @@ window.togglePartnerField=()=>{
   document.getElementById('my-partner-group').style.display=isD?'block':'none';
   document.getElementById('opp2-group').style.display=isD?'block':'none';
 };
-function renderPlayers() {
-  document.getElementById('player-list').innerHTML=state.players.length?state.players.map(p=>`<div class="player-card">
-    <div style="display:flex;align-items:center;gap:8px">
-      <div style="flex:1"><span style="font-size:15px;font-weight:600">${p.name}</span> <span style="font-size:12px;color:var(--text3)">${p.gender||''}</span>
-        ${p.level?`<span class="level-badge" style="margin-left:4px">${p.level}</span>`:''}
-      </div>
-      <button class="edit-btn" onclick="openEditPlayer('${p.id}')">✎</button>
-      <button class="del-btn" onclick="deletePlayer('${p.id}')">✕</button>
-    </div>
-    <div style="font-size:12px;color:var(--text3);margin-top:4px">${p.club?'🏢 '+p.club:''}${p.feature?' · '+p.feature:''}</div>
-    ${p.memo?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${p.memo}</div>`:''}
-  </div>`).join(''):'<p class="empty-msg">상대방을 추가해주세요</p>';
+let playerSort='fav';
+function setPlayerSort(type,btn){
+  playerSort=type;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPlayers();
 }
+
+function levelOrder(l){
+  if(!l)return 99;
+  const map={'S':0,'A':1,'B':2,'C':3,'D':4,'E':5};
+  const letter=l.replace(/[^A-Za-z]/g,'').toUpperCase();
+  return map[letter]!==undefined?map[letter]:10;
+}
+
+function renderPlayers(){
+  const el=document.getElementById('player-list');
+  if(!state.players.length){el.innerHTML='<p class="empty-msg">상대방을 추가해주세요</p>';return;}
+
+  let sorted=[...state.players];
+  if(playerSort==='fav') sorted.sort((a,b)=>(b.fav?1:0)-(a.fav?1:0)||(a.name||'').localeCompare(b.name||''));
+  else if(playerSort==='club') sorted.sort((a,b)=>(a.club||'').localeCompare(b.club||''));
+  else if(playerSort==='gender') sorted.sort((a,b)=>(a.gender||'').localeCompare(b.gender||''));
+  else if(playerSort==='level-asc') sorted.sort((a,b)=>levelOrder(a.level)-levelOrder(b.level));
+  else if(playerSort==='level-desc') sorted.sort((a,b)=>levelOrder(b.level)-levelOrder(a.level));
+  else if(playerSort==='name') sorted.sort((a,b)=>(a.name||'').localeCompare(b.name||''));
+
+  function playerCard(p){
+    return`<div class="player-card" style="cursor:pointer" onclick="openEditPlayer('${p.id}')">
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="fav-btn" onclick="event.stopPropagation();toggleFav('${p.id}')">${p.fav?'⭐':'☆'}</button>
+        <div style="flex:1">
+          <span style="font-size:15px;font-weight:600">${p.name}</span>
+          <span style="font-size:12px;color:var(--text3);margin-left:4px">${p.gender||''}</span>
+          ${p.level?`<span class="level-badge" style="margin-left:4px">${p.level}</span>`:''}
+        </div>
+        <button class="del-btn" onclick="event.stopPropagation();deletePlayer('${p.id}')">✕</button>
+      </div>
+      <div style="font-size:12px;color:var(--text3);margin-top:4px">${p.club?'🏢 '+p.club:''}${p.feature?' · '+p.feature:''}</div>
+      ${p.memo?`<div style="font-size:12px;color:var(--text3);margin-top:2px">${p.memo}</div>`:''}
+    </div>`;
+  }
+
+  // 클럽별 2컬럼 레이아웃
+  if(playerSort==='club'){
+    const myClub='위너'; // 소속 클럽 키워드
+    const mine=sorted.filter(p=>(p.club||'').includes(myClub));
+    const others=sorted.filter(p=>!(p.club||'').includes(myClub));
+    let html=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><div class="player-grid-header">🏸 ${myClub}클럽 (${mine.length})</div>${mine.map(playerCard).join('')}</div>
+      <div><div class="player-grid-header">👥 다른 클럽 (${others.length})</div>${others.map(playerCard).join('')}</div>
+    </div>`;
+    el.innerHTML=html;
+  } else {
+    el.innerHTML=sorted.map(playerCard).join('');
+  }
+}
+
+window.toggleFav=async id=>{
+  const p=state.players.find(p=>p.id===id);if(!p)return;
+  p.fav=!p.fav;
+  await updItem('players',id,{fav:p.fav});
+  renderPlayers();
+};
 window.savePlayer=async()=>{
   const id=document.getElementById('player-edit-id').value;
   const data={name:document.getElementById('player-name').value.trim(),gender:document.getElementById('player-gender').value,
