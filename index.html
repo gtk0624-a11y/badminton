@@ -157,6 +157,9 @@ body{
 .dday-near{background:var(--amber-light);color:#854F0B}
 .dday-far{background:var(--green-light);color:var(--green-dark)}
 .dday-past{background:var(--gray-light);color:var(--gray)}
+.mood-btn{font-size:24px;background:none;border:2px solid transparent;border-radius:8px;cursor:pointer;padding:4px 8px;transition:all 0.15s}
+.mood-btn.active{border-color:var(--green);background:var(--green-light)}
+.diary-card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);padding:14px;margin-bottom:10px;cursor:pointer;box-shadow:0 1px 5px rgba(29,158,117,0.07)}
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:flex-end;justify-content:center}
 .modal-overlay.open{display:flex}
 .modal{background:var(--white);border-radius:16px 16px 0 0;padding:20px 16px calc(20px + env(safe-area-inset-bottom));width:100%;max-width:640px;max-height:90vh;overflow-y:auto}
@@ -339,6 +342,12 @@ body{
     <button class="filter-tab" onclick="filterYoutube('기타',this)">기타</button>
   </div>
   <div id="youtube-list"></div>
+</div>
+
+<!-- 민턴일기 -->
+<div id="page-diary" class="page">
+  <div class="page-banner"><div class="page-banner-title">📝 민턴일기</div><button class="btn btn-white btn-sm" onclick="openDiaryModal()">+ 쓰기</button></div>
+  <div id="diary-list"></div>
 </div>
 
 <!-- 장비/메모 -->
@@ -675,6 +684,27 @@ body{
   </div>
 </div>
 
+<!-- 민턴일기 모달 -->
+<div class="modal-overlay" id="modal-diary">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-title" id="modal-diary-title">민턴 일기 쓰기</div>
+    <input type="hidden" id="diary-edit-id">
+    <div class="form-group"><label>날짜</label><input type="date" id="diary-date"></div>
+    <div class="form-group"><label>오늘의 기분</label>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="mood-btn" id="mood-😊" onclick="setMood('😊')">😊</button>
+        <button class="mood-btn" id="mood-🔥" onclick="setMood('🔥')">🔥</button>
+        <button class="mood-btn" id="mood-😤" onclick="setMood('😤')">😤</button>
+        <button class="mood-btn" id="mood-😴" onclick="setMood('😴')">😴</button>
+        <button class="mood-btn" id="mood-🤕" onclick="setMood('🤕')">🤕</button>
+        <button class="mood-btn" id="mood-🏆" onclick="setMood('🏆')">🏆</button>
+      </div>
+    </div>
+    <div class="form-group"><label>제목</label><input type="text" id="diary-title-input" placeholder="오늘의 한 줄"></div>
+    <div class="form-group"><label>일기</label><textarea id="diary-content" style="min-height:120px" placeholder="오늘 배드민턴 어땠나요?"></textarea></div>
+    <div class="btn-row"><button class="btn btn-green" onclick="saveDiary()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-diary')">취소</button></div>
+  </div>
+</div>
+
 <!-- 네비 -->
 <nav class="nav">
   <button class="nav-btn active" onclick="showPage('home',this)"><svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>홈</button>
@@ -686,6 +716,7 @@ body{
   <button class="nav-btn" onclick="showPage('memo',this)"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>장비</button>
   <button class="nav-btn" onclick="showPage('game',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>게임</button>
   <button class="nav-btn" onclick="showPage('clubmatch',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>클럽매치</button>
+  <button class="nav-btn" onclick="showPage('diary',this)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>민턴일기</button>
 </nav>
 <div style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--text3);opacity:0.6;pointer-events:none">© Copyright 김정환</div>
 
@@ -712,7 +743,8 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
-let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[], clubmatches:[], routineLogs:[] };
+let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[], clubmatches:[], routineLogs:[], diaries:[] };
+let selectedMood='';
 let routineDate = new Date().toISOString().split('T')[0];
 let pageHistory = [];
 let ratings = { condition:0, focusRating:0 };
@@ -773,13 +805,14 @@ async function loadAll() {
   document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('game-date').value = new Date().toISOString().split('T')[0];
   try {
-    const [logs,routines,events,youtube,memos,equipment,players,games,clubmatches,routineLogs] = await Promise.all([
+    const [logs,routines,events,youtube,memos,equipment,players,games,clubmatches,routineLogs,diaries] = await Promise.all([
       getAll('logs'), getAll('routines'), getAll('events'), getAll('youtube'),
-      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'), getAll('clubmatches'), getAll('routineLogs'),
+      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'), getAll('clubmatches'), getAll('routineLogs'), getAll('diaries'),
     ]);
     state.logs = logs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
     state.clubmatches = (clubmatches||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     state.routineLogs = (routineLogs||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    state.diaries = (diaries||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     state.routines = routines;
     if(!state.routines.length) await initDefaultRoutines();
     state.events = events;
@@ -814,7 +847,7 @@ async function initDefaultRoutines() {
 function renderAll() {
   renderHome(); renderLogList(); renderRoutines(); renderCalendar();
   renderStats(); renderYoutube(); renderEquipment(); renderMemos();
-  renderPlayers(); renderGames(); populatePlayerSelects(); renderClubMatches(); populateCMSelects();
+  renderPlayers(); renderGames(); populatePlayerSelects(); renderClubMatches(); populateCMSelects(); renderDiaries();
   const cmDate=document.getElementById('cm-date');if(cmDate)cmDate.value=new Date().toISOString().split('T')[0];
   renderRoutineLogHistory();
 }
@@ -889,8 +922,7 @@ window.filterLogs = (type,btn) => {
 };
 function renderLogList() {
   const list = logFilter==='전체'?state.logs:state.logs.filter(l=>l.type===logFilter);
-  document.getElementById('log-list').innerHTML = list.length ? list.map(l=>`
-    <div class="card" style="cursor:pointer" onclick="openEditLog('${l.id}')">
+  function logCard(l){return`<div class="card" style="cursor:pointer" onclick="openEditLog('${l.id}')">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span class="badge badge-${l.type}">${l.type}</span>
         <span style="font-size:13px;font-weight:500;flex:1">${l.date}${l.place?' · '+l.place:''}</span>
@@ -901,8 +933,25 @@ function renderLogList() {
       ${l.good?`<div style="font-size:12px;color:var(--green-dark);margin-top:5px">✓ ${l.good}</div>`:''}
       ${l.improve?`<div style="font-size:12px;color:#993C1D;margin-top:2px">↑ ${l.improve}</div>`:''}
       ${(Number(l.condition)||Number(l.focusRating))?`<div style="font-size:11px;color:var(--text3);margin-top:5px">컨디션 ${'★'.repeat(Number(l.condition)||0)} 집중도 ${'★'.repeat(Number(l.focusRating)||0)}</div>`:''}
-      <div style="font-size:11px;color:var(--green);margin-top:4px">탭하여 편집 ›</div>
-    </div>`).join('') : '<p class="empty-msg">기록이 없습니다</p>';
+    </div>`;}
+  if(!list.length){document.getElementById('log-list').innerHTML='<p class="empty-msg">기록이 없습니다</p>';return;}
+  // 월별 그룹핑
+  const byMonth={};
+  list.forEach(l=>{const m=l.date?l.date.slice(0,7):'기타';if(!byMonth[m])byMonth[m]=[];byMonth[m].push(l);});
+  const months=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
+  let html='';
+  months.forEach((m,mi)=>{
+    const items=byMonth[m];
+    const isFirst=mi===0;
+    html+=`<div style="margin-bottom:4px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px;cursor:pointer" onclick="toggleMonthLog('mlog-${m}',this)">
+        <span style="font-size:13px;font-weight:600;color:var(--text2)">${m} <span style="font-weight:400;color:var(--text3)">(${items.length}건)</span></span>
+        <span style="font-size:12px;color:var(--text3)">${isFirst?'▲':'▼'}</span>
+      </div>
+      <div id="mlog-${m}" style="display:${isFirst?'block':'none'}">${items.map(logCard).join('')}</div>
+    </div>`;
+  });
+  document.getElementById('log-list').innerHTML=html;
 }
 window.openEditLog = id => {
   const l = state.logs.find(l=>l.id===id); if(!l) return;
@@ -1766,6 +1815,13 @@ function updateBackBtn(){
   const btn=document.getElementById('back-btn');
   if(btn) btn.style.display=pageHistory.length?'flex':'none';
 }
+window.toggleMonthLog=function(id,header){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const arrow=header.querySelector('span:last-child');
+  if(el.style.display==='none'){el.style.display='block';if(arrow)arrow.textContent='▲';}
+  else{el.style.display='none';if(arrow)arrow.textContent='▼';}
+};
 window.toggleRlogMore=function(btn){
   const el=document.getElementById('rlog-more');
   if(el.style.display==='none'){el.style.display='block';btn.textContent='접기 ▲';}
@@ -1820,6 +1876,97 @@ function renderRoutineLogHistory(){
   const show3=state.routineLogs.slice(0,3).map(rlogCard).join('');
   const more=state.routineLogs.length>3?state.routineLogs.slice(3).map(rlogCard).join(''):'';
   el.innerHTML=show3+(more?`<div id="rlog-more" style="display:none">${more}</div><button class="btn btn-outline btn-sm" style="width:100%;margin-top:6px" onclick="toggleRlogMore(this)">더 보기 (${state.routineLogs.length-3}개) ▾</button>`:'');
+}
+
+// ── 민턴일기
+window.setMood=function(emoji){
+  selectedMood=emoji;
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.getElementById('mood-'+emoji);
+  if(btn)btn.classList.add('active');
+};
+window.openDiaryModal=function(){
+  document.getElementById('diary-edit-id').value='';
+  document.getElementById('modal-diary-title').textContent='민턴 일기 쓰기';
+  document.getElementById('diary-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('diary-title-input').value='';
+  document.getElementById('diary-content').value='';
+  selectedMood='';
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('active'));
+  openModal('modal-diary');
+};
+window.openEditDiary=function(id){
+  const d=state.diaries.find(d=>d.id===id);if(!d)return;
+  document.getElementById('diary-edit-id').value=d.id;
+  document.getElementById('modal-diary-title').textContent='일기 수정';
+  document.getElementById('diary-date').value=d.date||'';
+  document.getElementById('diary-title-input').value=d.title||'';
+  document.getElementById('diary-content').value=d.content||'';
+  selectedMood=d.mood||'';
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('active'));
+  if(d.mood){const btn=document.getElementById('mood-'+d.mood);if(btn)btn.classList.add('active');}
+  openModal('modal-diary');
+};
+window.saveDiary=async function(){
+  const editId=document.getElementById('diary-edit-id').value;
+  const data={
+    date:document.getElementById('diary-date').value,
+    title:document.getElementById('diary-title-input').value.trim(),
+    content:document.getElementById('diary-content').value.trim(),
+    mood:selectedMood
+  };
+  if(!data.date){showToast('날짜를 입력하세요');return;}
+  if(!data.content){showToast('일기 내용을 써 주세요');return;}
+  if(editId){
+    data.id=editId;
+    await updItem('diaries',editId,data);
+    const d=state.diaries.find(d=>d.id===editId);if(d)Object.assign(d,data);
+    showToast('수정됐습니다');
+  } else {
+    const item=await addItem('diaries',data);
+    state.diaries.unshift(item);
+    state.diaries.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    showToast('저장됐습니다');
+  }
+  closeModal('modal-diary');renderDiaries();
+};
+window.deleteDiary=async function(id){
+  if(!confirm('삭제?'))return;
+  await delItem('diaries',id);
+  state.diaries=state.diaries.filter(d=>d.id!==id);
+  renderDiaries();showToast('삭제');
+};
+function renderDiaries(){
+  const el=document.getElementById('diary-list');if(!el)return;
+  if(!state.diaries.length){el.innerHTML='<p class="empty-msg">첫 민턴일기를 써보세요 ✍️</p>';return;}
+  // 월별 그룹핑
+  const byMonth={};
+  state.diaries.forEach(d=>{const m=d.date?d.date.slice(0,7):'기타';if(!byMonth[m])byMonth[m]=[];byMonth[m].push(d);});
+  const months=Object.keys(byMonth).sort((a,b)=>b.localeCompare(a));
+  let html='';
+  months.forEach((m,mi)=>{
+    const items=byMonth[m];
+    html+=`<div style="margin-bottom:4px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 4px;cursor:pointer" onclick="toggleMonthLog('diary-${m}',this)">
+        <span style="font-size:13px;font-weight:600;color:var(--text2)">${m} <span style="font-weight:400;color:var(--text3)">(${items.length}편)</span></span>
+        <span style="font-size:12px;color:var(--text3)">${mi===0?'▲':'▼'}</span>
+      </div>
+      <div id="diary-${m}" style="display:${mi===0?'block':'none'}">
+        ${items.map(d=>`<div class="diary-card" onclick="openEditDiary('${d.id}')">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            ${d.mood?`<span style="font-size:20px">${d.mood}</span>`:''}
+            <div style="flex:1">
+              <div style="font-size:13px;font-weight:600">${d.title||'(제목 없음)'}</div>
+              <div style="font-size:11px;color:var(--text3)">${d.date}</div>
+            </div>
+            <button class="del-btn" onclick="event.stopPropagation();deleteDiary('${d.id}')">✕</button>
+          </div>
+          <div style="font-size:13px;color:var(--text2);white-space:pre-wrap;word-break:break-word;max-height:80px;overflow:hidden;mask-image:linear-gradient(to bottom,#000 60%,transparent)">${d.content||''}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  });
+  el.innerHTML=html;
 }
 </script>
 </body>
