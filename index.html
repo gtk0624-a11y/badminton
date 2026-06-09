@@ -514,7 +514,7 @@ body{
 
 <!-- 일정 -->
 <div class="modal-overlay" id="modal-event">
-  <div class="modal"><div class="modal-handle"></div><div class="modal-title">일정 추가</div>
+  <div class="modal"><div class="modal-handle"></div><div class="modal-title" id="modal-event-title">일정 추가</div><input type="hidden" id="event-edit-id">
     <div class="form-group"><label>날짜</label><input type="date" id="ev-date"></div>
     <div class="form-group"><label>유형</label><select id="ev-type"><option>훈련</option><option>레슨</option><option>대회</option><option>자체게임</option></select></div>
     <div class="form-group"><label>제목</label><input type="text" id="ev-title"></div>
@@ -820,12 +820,20 @@ function renderAll() {
 
 // ── UI 공통 ────────────────────────────────────────────────
 window.showPage = (id, btn) => {
+  const cur=document.querySelector('.page.active');
+  if(cur && cur.id!=='page-'+id){
+    const curId=cur.id.replace('page-','');
+    if(pageHistory[pageHistory.length-1]!==curId) pageHistory.push(curId);
+    if(pageHistory.length>20) pageHistory.shift();
+  }
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
-  btn.classList.add('active');
+  if(btn) btn.classList.add('active');
+  updateBackBtn();
   if(id==='stats') renderStats();
-  if(id==='game' && currentGameTab==='winrate') renderWinrate();
+  if(id==='game'&&currentGameTab==='winrate') renderWinrate();
+  if(id==='routine') renderRoutines();
 };
 window.openModal = id => document.getElementById(id).classList.add('open');
 window.closeModal = id => document.getElementById(id).classList.remove('open');
@@ -850,7 +858,7 @@ function renderHome() {
   document.getElementById('home-stats').innerHTML=`
     <div class="stat-card" style="cursor:pointer" onclick="showPage('log',document.querySelectorAll('.nav-btn')[1])"><div class="stat-val">${state.logs.length}</div><div class="stat-lbl">총 훈련 기록</div></div>
     <div class="stat-card" style="cursor:pointer" onclick="showPage('log',document.querySelectorAll('.nav-btn')[1])"><div class="stat-val">${thisMonth.length}</div><div class="stat-lbl">이번 달</div></div>
-    <div class="stat-card" style="cursor:pointer" onclick="showPage('stats',document.querySelectorAll('.nav-btn')[4])"><div class="stat-val">${Math.round(totalMin/60)}h</div><div class="stat-lbl">총 훈련시간</div></div>
+    <div class="stat-card" style="cursor:pointer" onclick="showPage('stats',document.querySelectorAll('.nav-btn')[4])"><div class="stat-val">${Math.round(totalMin/60)}h</div><div class="stat-lbl">총 훈련시간 ›</div></div>
     <div class="stat-card" style="cursor:pointer" onclick="showPage('game',document.querySelectorAll('.nav-btn')[7])"><div class="stat-val">${wr!==null?wr+'%':'-'}</div><div class="stat-lbl">전체 승률</div></div>`;
   const upcoming = state.events.filter(e=>new Date(e.date)>=new Date(now.toDateString())).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
   const upEl = document.getElementById('home-upcoming');
@@ -1070,21 +1078,43 @@ function renderUpcoming() {
   document.getElementById('upcoming-list').innerHTML=list.length?list.map(e=>{
     const diff=Math.ceil((new Date(e.date)-new Date(now.toDateString()))/86400000);
     const cls=diff===0?'dday-today':diff<=3?'dday-soon':diff<=7?'dday-near':'dday-far';
-    return`<div class="upcoming-item"><span class="dday ${cls}">${diff===0?'오늘':diff===1?'내일':'D-'+diff}</span>
+    return`<div class="upcoming-item" style="cursor:pointer" onclick="openEditEvent('${e.id}')">
+      <span class="dday ${cls}">${diff===0?'오늘':diff===1?'내일':'D-'+diff}</span>
       <div class="upcoming-info"><div style="font-size:13px;font-weight:500">${e.title}</div>
       <div style="font-size:11px;color:var(--text3)">${e.date}${e.memo?' · '+e.memo:''}</div></div>
       <span class="badge badge-${e.type}">${e.type}</span>
-      <button class="del-btn" onclick="deleteEvent('${e.id}')">✕</button></div>`;
+      <button class="del-btn" onclick="event.stopPropagation();deleteEvent('${e.id}')">✕</button></div>`;
   }).join(''):'<p class="empty-msg">다가오는 일정이 없습니다</p>';
 }
 window.prevMonth=()=>{calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();};
 window.nextMonth=()=>{calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();};
 window.openAddEvent = ds => { document.getElementById('ev-date').value=ds||''; document.getElementById('ev-title').value=''; document.getElementById('ev-memo').value=''; openModal('modal-event'); };
+window.openEditEvent = function(id){
+  const e=state.events.find(e=>e.id===id);if(!e)return;
+  document.getElementById('event-edit-id').value=id;
+  document.getElementById('ev-date').value=e.date||'';
+  document.getElementById('ev-type').value=e.type||'훈련';
+  document.getElementById('ev-title').value=e.title||'';
+  document.getElementById('ev-memo').value=e.memo||'';
+  document.getElementById('modal-event-title').textContent='일정 편집';
+  openModal('modal-event');
+};
 window.saveEvent = async () => {
   const data={date:document.getElementById('ev-date').value,type:document.getElementById('ev-type').value,title:document.getElementById('ev-title').value.trim(),memo:document.getElementById('ev-memo').value};
   if(!data.date||!data.title){showToast('날짜와 제목 필요');return;}
-  const item=await addItem('events',data); state.events.push(item);
-  closeModal('modal-event'); renderCalendar(); renderHome(); showToast('저장');
+  const editId=document.getElementById('event-edit-id').value;
+  if(editId){
+    data.id=editId;
+    await updItem('events',editId,data);
+    const ev=state.events.find(e=>e.id===editId);if(ev)Object.assign(ev,data);
+    showToast('수정되었습니다');
+  } else {
+    const item=await addItem('events',data);state.events.push(item);
+    showToast('저장되었습니다');
+  }
+  document.getElementById('event-edit-id').value='';
+  document.getElementById('modal-event-title').textContent='일정 추가';
+  closeModal('modal-event'); renderCalendar(); renderHome();
 };
 window.deleteEvent = async id => {
   if(!confirm('삭제?'))return;
@@ -1157,10 +1187,10 @@ function renderEquipment() {
   cats.forEach(cat=>{
     const items=state.equipment.filter(e=>e.category===cat);if(!items.length)return;
     html+=`<div class="equip-cat-title">${cat}</div>`;
-    html+=items.map(e=>`<div class="card">
+    html+=items.map(e=>`<div class="card" style="cursor:pointer" onclick="openEditEquipment('${e.id}')">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
         <span style="font-size:14px;font-weight:600">${e.brand||''}</span><span style="font-size:13px;color:var(--text2)">${e.model||''}</span>
-        <div style="flex:1"></div><button class="edit-btn" onclick="openEditEquipment('${e.id}')">✎</button><button class="del-btn" onclick="deleteEquipment('${e.id}')">✕</button>
+        <div style="flex:1"></div><button class="edit-btn" onclick="event.stopPropagation();openEditEquipment('${e.id}')">✎</button><button class="del-btn" onclick="event.stopPropagation();deleteEquipment('${e.id}')">✕</button>
       </div>
       ${e.detail?`<div style="font-size:12px;color:var(--text3)">${e.detail}</div>`:''}
       ${e.purchaseDate?`<div style="font-size:12px;color:var(--text3)">구매: ${e.purchaseDate}</div>`:''}
