@@ -1215,18 +1215,24 @@ window.deletePlayer=async id=>{if(!confirm('삭제?'))return;await delItem('play
 function renderGames() {
   const pMap={};state.players.forEach(p=>{pMap[p.id]=p;});
   document.getElementById('game-list').innerHTML=state.games.length?state.games.map(g=>{
-    const o1=pMap[g.opponent1];const o2=pMap[g.opponent2];
+    const o1=pMap[g.opponent1];const o2=pMap[g.opponent2];const mp=pMap[g.myPartner];
     const sets=[];
     if(g.myScore1!==''&&g.oppScore1!=='') sets.push(`${g.myScore1}:${g.oppScore1}`);
     if(g.myScore2!==''&&g.oppScore2!=='') sets.push(`${g.myScore2}:${g.oppScore2}`);
     if(g.myScore3!==''&&g.oppScore3!=='') sets.push(`${g.myScore3}:${g.oppScore3}`);
+    const myTeam=mp?`나 + ${mp.name}`:'나';
+    const oppTeam=`${o1?o1.name+'('+(o1.level||'')+')':'?'}${o2?' + '+o2.name:''}`;
     return`<div class="game-card">
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
         <span class="badge badge-${g.result==='승'?'승':'패'}">${g.result||'-'}</span>
         <span style="font-size:13px;font-weight:500;flex:1">${g.date} · ${g.matchType||'단식'}</span>
         <button class="del-btn" onclick="deleteGame('${g.id}')">✕</button>
       </div>
-      <div style="font-size:13px;color:var(--text2);margin-bottom:4px">vs ${o1?o1.name+'('+( o1.level||'')+')':'?'}${o2?' + '+o2.name:''}</div>
+      <div style="font-size:13px;margin-bottom:4px">
+        <span style="color:var(--green);font-weight:500">${myTeam}</span>
+        <span style="color:var(--text3);margin:0 6px">vs</span>
+        <span style="color:var(--red);font-weight:500">${oppTeam}</span>
+      </div>
       ${sets.length?`<div style="display:flex;gap:6px;margin-bottom:4px">${sets.map(s=>`<span style="background:var(--gray-light);border-radius:6px;padding:3px 8px;font-size:12px;font-weight:600">${s}</span>`).join('')}</div>`:''}
       ${g.memo?`<div style="font-size:12px;color:var(--text3)">${g.memo}</div>`:''}
     </div>`;
