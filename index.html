@@ -344,6 +344,12 @@ body{
   <div id="youtube-list"></div>
 </div>
 
+<!-- 대회기록 -->
+<div id="page-tourney" class="page">
+  <div class="page-banner"><div class="page-banner-title">🏆 대회기록</div><button class="btn btn-white btn-sm" onclick="openTourneyModal()">+ 추가</button></div>
+  <div id="tourney-list"></div>
+</div>
+
 <!-- 민턴일기 -->
 <div id="page-diary" class="page">
   <div class="page-banner"><div class="page-banner-title">📝 민턴일기</div><button class="btn btn-white btn-sm" onclick="openDiaryModal()">+ 쓰기</button></div>
@@ -476,7 +482,7 @@ body{
     <div class="form-group"><label>집중 기술</label><input type="text" id="log-focus" placeholder="백핸드 드롭, 스매시"></div>
     <div class="form-group"><label>잘된 점</label><textarea id="log-good"></textarea></div>
     <div class="form-group"><label>개선할 점</label><textarea id="log-improve"></textarea></div>
-    <div class="form-group"><label>메모</label><input type="text" id="log-memo"></div>
+    <div class="form-group"><label>메모</label><textarea id="log-memo" style="min-height:60px"></textarea></div>
     <div class="form-group"><label>컨디션</label>
       <div class="stars" id="stars-condition">
         <span class="star" onclick="setStars('condition',1)">★</span><span class="star" onclick="setStars('condition',2)">★</span>
@@ -528,7 +534,7 @@ body{
     <div class="form-group"><label>날짜</label><input type="date" id="ev-date"></div>
     <div class="form-group"><label>유형</label><select id="ev-type"><option>훈련</option><option>레슨</option><option>대회</option><option>자체게임</option></select></div>
     <div class="form-group"><label>제목</label><input type="text" id="ev-title"></div>
-    <div class="form-group"><label>메모</label><input type="text" id="ev-memo"></div>
+    <div class="form-group"><label>메모</label><textarea id="ev-memo" style="min-height:60px"></textarea></div>
     <div class="btn-row"><button class="btn btn-green" onclick="saveEvent()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-event')">취소</button></div>
   </div>
 </div>
@@ -539,7 +545,7 @@ body{
     <div class="form-group"><label>YouTube URL</label><input type="url" id="yt-url" placeholder="https://youtu.be/..."></div>
     <div class="form-group"><label>제목</label><input type="text" id="yt-title"></div>
     <div class="form-group"><label>카테고리</label><select id="yt-category"><option>기술</option><option>전술</option><option>체력</option><option>경기분석</option><option>기타</option></select></div>
-    <div class="form-group"><label>메모</label><input type="text" id="yt-memo"></div>
+    <div class="form-group"><label>메모</label><textarea id="yt-memo" style="min-height:60px"></textarea></div>
     <div class="btn-row"><button class="btn btn-green" onclick="saveYoutube()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-youtube')">취소</button></div>
   </div>
 </div>
@@ -556,7 +562,7 @@ body{
     <div class="form-group"><label>세부사항</label><input type="text" id="equip-detail" placeholder="텐션 27파운드 등"></div>
     <div class="form-row">
       <div class="form-group"><label>구매일</label><input type="date" id="equip-purchase"></div>
-      <div class="form-group"><label>메모</label><input type="text" id="equip-memo"></div>
+      <div class="form-group"><label>메모</label><textarea id="equip-memo" style="min-height:60px"></textarea></div>
     </div>
     <div class="btn-row"><button class="btn btn-green" onclick="saveEquipment()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-equipment')">취소</button></div>
   </div>
@@ -585,8 +591,8 @@ body{
       <div class="form-group"><label>급수</label><input type="text" id="player-level" placeholder="3부, A급"></div>
       <div class="form-group"><label>소속 클럽</label><input type="text" id="player-club"></div>
     </div>
-    <div class="form-group"><label>특징</label><input type="text" id="player-feature" placeholder="백핸드 강함"></div>
-    <div class="form-group"><label>메모</label><input type="text" id="player-memo"></div>
+    <div class="form-group"><label>특징</label><textarea id="player-feature" style="min-height:60px" placeholder="백핸드 강함"></textarea></div>
+    <div class="form-group"><label>메모</label><textarea id="player-memo" style="min-height:60px"></textarea></div>
     <div class="btn-row"><button class="btn btn-green" onclick="savePlayer()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-player')">취소</button></div>
   </div>
 </div>
@@ -630,7 +636,7 @@ body{
       </div>
     </div>
     <div class="form-group"><label>승패</label><select id="game-result"><option value="승">승</option><option value="패">패</option></select></div>
-    <div class="form-group"><label>메모</label><input type="text" id="game-memo"></div>
+    <div class="form-group"><label>메모</label><textarea id="game-memo" style="min-height:60px"></textarea></div>
     <div class="btn-row"><button class="btn btn-green" onclick="saveGame()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-game')">취소</button></div>
   </div>
 </div>
@@ -679,8 +685,42 @@ body{
         <input type="number" id="cm-score-b" min="0" max="30" placeholder="0" style="text-align:center;font-size:20px;font-weight:700;padding:12px">
       </div>
     </div>
-    <div class="form-group"><label>메모</label><input type="text" id="cm-memo"></div>
+    <div class="form-group"><label>메모</label><textarea id="cm-memo" style="min-height:60px"></textarea></div>
     <div class="btn-row"><button class="btn btn-green" onclick="saveClubMatch()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-clubmatch')">취소</button></div>
+  </div>
+</div>
+
+<!-- 대회기록 모달 -->
+<div class="modal-overlay" id="modal-tourney">
+  <div class="modal"><div class="modal-handle"></div><div class="modal-title" id="modal-tourney-title">대회 기록 추가</div>
+    <input type="hidden" id="tourney-edit-id">
+    <div class="form-group"><label>대회명</label><input type="text" id="t-name" placeholder="예: 수원시 배드민턴 대회"></div>
+    <div class="form-row">
+      <div class="form-group"><label>날짜</label><input type="date" id="t-date"></div>
+      <div class="form-group"><label>장소</label><input type="text" id="t-place" placeholder="수원실내체육관"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>종목</label>
+        <select id="t-type"><option>남단</option><option>여단</option><option>남복</option><option>여복</option><option>혼복</option></select>
+      </div>
+      <div class="form-group"><label>참가팀 수</label><input type="number" id="t-teams" placeholder="16" min="2"></div>
+    </div>
+    <div class="form-group"><label>최종 성적</label>
+      <select id="t-rank">
+        <option value="">선택</option><option>우승 🥇</option><option>준우승 🥈</option><option>3위 🥉</option>
+        <option>8강</option><option>16강</option><option>32강</option><option>조별리그 탈락</option>
+      </select>
+    </div>
+    <div class="sep"></div>
+    <div style="font-size:13px;font-weight:600;margin-bottom:8px">대진표</div>
+    <div id="bracket-rounds"></div>
+    <button type="button" class="btn btn-outline btn-sm" onclick="addBracketRound()" style="margin-top:6px;width:100%">+ 라운드 추가</button>
+    <div class="sep"></div>
+    <div class="form-group"><label>목표</label><input type="text" id="t-goal" placeholder="예: 8강 진출"></div>
+    <div class="form-group"><label>잘한 점</label><textarea id="t-good" style="min-height:60px"></textarea></div>
+    <div class="form-group"><label>개선할 점</label><textarea id="t-improve" style="min-height:60px"></textarea></div>
+    <div class="form-group"><label>메모</label><textarea id="t-memo" style="min-height:60px"></textarea></div>
+    <div class="btn-row"><button class="btn btn-green" onclick="saveTourney()">저장</button><button class="btn btn-outline" onclick="closeModal('modal-tourney')">취소</button></div>
   </div>
 </div>
 
@@ -716,6 +756,7 @@ body{
   <button class="nav-btn" onclick="showPage('memo',this)"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>장비</button>
   <button class="nav-btn" onclick="showPage('game',this)"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>게임</button>
   <button class="nav-btn" onclick="showPage('clubmatch',this)"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>클럽매치</button>
+  <button class="nav-btn" onclick="showPage('tourney',this)"><svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>대회</button>
   <button class="nav-btn" onclick="showPage('diary',this)"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>민턴일기</button>
 </nav>
 <div style="position:fixed;bottom:68px;right:12px;font-size:10px;color:var(--text3);opacity:0.6;pointer-events:none">© Copyright 김정환</div>
@@ -743,7 +784,7 @@ const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
 let currentUser = null;
-let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[], clubmatches:[], routineLogs:[], diaries:[] };
+let state = { logs:[], routines:[], events:[], youtube:[], memos:[], equipment:[], players:[], games:[], clubmatches:[], routineLogs:[], diaries:[], tourneys:[] };
 let selectedMood='';
 let routineDate = new Date().toISOString().split('T')[0];
 let pageHistory = [];
@@ -805,14 +846,15 @@ async function loadAll() {
   document.getElementById('log-date').value = new Date().toISOString().split('T')[0];
   document.getElementById('game-date').value = new Date().toISOString().split('T')[0];
   try {
-    const [logs,routines,events,youtube,memos,equipment,players,games,clubmatches,routineLogs,diaries] = await Promise.all([
+    const [logs,routines,events,youtube,memos,equipment,players,games,clubmatches,routineLogs,diaries,tourneys] = await Promise.all([
       getAll('logs'), getAll('routines'), getAll('events'), getAll('youtube'),
-      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'), getAll('clubmatches'), getAll('routineLogs'), getAll('diaries'),
+      getAll('memos'), getAll('equipment'), getAll('players'), getAll('games'), getAll('clubmatches'), getAll('routineLogs'), getAll('diaries'), getAll('tourneys'),
     ]);
     state.logs = logs.sort((a,b) => (b.date||'').localeCompare(a.date||''));
     state.clubmatches = (clubmatches||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     state.routineLogs = (routineLogs||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     state.diaries = (diaries||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    state.tourneys = (tourneys||[]).sort((a,b)=>(b.date||'').localeCompare(a.date||''));
     state.routines = routines;
     if(!state.routines.length) await initDefaultRoutines();
     state.events = events;
@@ -847,7 +889,7 @@ async function initDefaultRoutines() {
 function renderAll() {
   renderHome(); renderLogList(); renderRoutines(); renderCalendar();
   renderStats(); renderYoutube(); renderEquipment(); renderMemos();
-  renderPlayers(); renderGames(); populatePlayerSelects(); renderClubMatches(); populateCMSelects(); renderDiaries();
+  renderPlayers(); renderGames(); populatePlayerSelects(); renderClubMatches(); populateCMSelects(); renderDiaries(); renderTourneys();
   const cmDate=document.getElementById('cm-date');if(cmDate)cmDate.value=new Date().toISOString().split('T')[0];
   renderRoutineLogHistory();
 }
@@ -1080,10 +1122,11 @@ function renderCalendar() {
     const evs=state.events.filter(e=>e.date===ds);
     const dayGames=state.games.filter(g=>g.date===ds);
     const dayRoutine=state.routineLogs.find(l=>l.date===ds);
+    const dayTourney=state.tourneys&&state.tourneys.find(t=>t.date===ds);
     const gameDots=dayGames.slice(0,4).map(g=>`<div class="${g.result==='승'?'dot-win':'dot-lose'}" style="width:6px;height:6px;border-radius:50%;display:inline-block;margin:0 1px"></div>`).join('');
     html+=`<div class="cal-cell${isT?' today':''}" onclick="openDayDetail('${ds}')">
       <div class="cal-num">${d}</div>
-      <div class="cal-dots">${evs.map(e=>`<div class="cal-dot dot-${e.type}"></div>`).join('')}${dayRoutine?'<div class="cal-dot" style="background:#059669"></div>':''}</div>
+      <div class="cal-dots">${evs.map(e=>`<div class="cal-dot dot-${e.type}"></div>`).join('')}${dayRoutine?'<div class="cal-dot" style="background:#059669"></div>':''}${dayTourney?'<div class="cal-dot" style="background:#D85A30"></div>':''}</div>
       ${gameDots?`<div>${gameDots}</div>`:''}
     </div>`;
   }
@@ -1136,7 +1179,7 @@ function renderUpcoming() {
     return`<div class="upcoming-item" style="cursor:pointer${diff<0?';opacity:0.6':''}" onclick="openEditEvent('${e.id}')">
       <span class="dday ${cls}">${label}</span>
       <div class="upcoming-info"><div style="font-size:13px;font-weight:500">${e.title}</div>
-      <div style="font-size:11px;color:var(--text3)">${e.date}${e.memo?' · '+e.memo:''}</div></div>
+      <div style="font-size:11px;color:var(--text3);white-space:pre-wrap">${e.date}${e.memo?'\n'+e.memo:''}</div></div>
       <span class="badge badge-${e.type}">${e.type}</span>
       <button class="del-btn" onclick="event.stopPropagation();deleteEvent('${e.id}')">✕</button></div>`;
   }
@@ -1967,6 +2010,145 @@ function renderDiaries(){
     </div>`;
   });
   el.innerHTML=html;
+}
+
+// ── 대회기록
+let bracketRoundCount = 0;
+window.openTourneyModal=function(){
+  document.getElementById('tourney-edit-id').value='';
+  document.getElementById('modal-tourney-title').textContent='대회 기록 추가';
+  ['t-name','t-place','t-goal','t-good','t-improve','t-memo'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('t-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('t-rank').value='';
+  document.getElementById('t-teams').value='';
+  document.getElementById('bracket-rounds').innerHTML='';
+  bracketRoundCount=0;
+  openModal('modal-tourney');
+};
+window.addBracketRound=function(){
+  bracketRoundCount++;
+  const div=document.createElement('div');
+  div.id='round-'+bracketRoundCount;
+  div.style.cssText='background:var(--bg);border-radius:var(--radius-sm);padding:10px;margin-bottom:8px';
+  div.innerHTML=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+    <input type="text" placeholder="라운드 (예: 8강)" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit" id="r${bracketRoundCount}-name">
+    <button type="button" class="del-btn" onclick="document.getElementById('round-${bracketRoundCount}').remove()">✕</button>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px">
+    <div style="text-align:center;font-size:11px;font-weight:600;color:var(--green)">나(우리)</div>
+    <div style="text-align:center;font-size:11px;font-weight:600;color:var(--red)">상대방</div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;margin-bottom:6px">
+    <input type="number" placeholder="점수" min="0" max="30" style="text-align:center;padding:7px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-weight:700;font-family:inherit" id="r${bracketRoundCount}-myscore">
+    <span style="font-size:12px;color:var(--text3)">:</span>
+    <input type="number" placeholder="점수" min="0" max="30" style="text-align:center;padding:7px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:14px;font-weight:700;font-family:inherit" id="r${bracketRoundCount}-oppscore">
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+    <input type="text" placeholder="상대방 이름" style="padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit" id="r${bracketRoundCount}-opp">
+    <select id="r${bracketRoundCount}-result" style="padding:7px;border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;font-family:inherit">
+      <option value="승">승</option><option value="패">패</option>
+    </select>
+  </div>`;
+  document.getElementById('bracket-rounds').appendChild(div);
+};
+window.saveTourney=async function(){
+  const editId=document.getElementById('tourney-edit-id').value;
+  // 대진표 수집
+  const rounds=[];
+  document.querySelectorAll('[id^="round-"]').forEach(div=>{
+    const n=div.id.replace('round-','');
+    rounds.push({
+      name:document.getElementById('r'+n+'-name')?.value||'',
+      myscore:document.getElementById('r'+n+'-myscore')?.value||'',
+      oppscore:document.getElementById('r'+n+'-oppscore')?.value||'',
+      opp:document.getElementById('r'+n+'-opp')?.value||'',
+      result:document.getElementById('r'+n+'-result')?.value||'승'
+    });
+  });
+  const data={
+    name:document.getElementById('t-name').value.trim(),
+    date:document.getElementById('t-date').value,
+    place:document.getElementById('t-place').value.trim(),
+    type:document.getElementById('t-type').value,
+    teams:document.getElementById('t-teams').value,
+    rank:document.getElementById('t-rank').value,
+    rounds,
+    goal:document.getElementById('t-goal').value.trim(),
+    good:document.getElementById('t-good').value.trim(),
+    improve:document.getElementById('t-improve').value.trim(),
+    memo:document.getElementById('t-memo').value.trim()
+  };
+  if(!data.name||!data.date){showToast('대회명과 날짜를 입력하세요');return;}
+  if(editId){
+    data.id=editId;
+    await updItem('tourneys',editId,data);
+    const t=state.tourneys.find(t=>t.id===editId);if(t)Object.assign(t,data);
+    showToast('수정됐습니다');
+  } else {
+    const item=await addItem('tourneys',data);
+    state.tourneys.unshift(item);
+    state.tourneys.sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    showToast('저장됐습니다');
+  }
+  closeModal('modal-tourney');renderTourneys();renderCalendar();
+};
+window.openEditTourney=function(id){
+  const t=state.tourneys.find(t=>t.id===id);if(!t)return;
+  document.getElementById('tourney-edit-id').value=t.id;
+  document.getElementById('modal-tourney-title').textContent='대회 기록 수정';
+  document.getElementById('t-name').value=t.name||'';
+  document.getElementById('t-date').value=t.date||'';
+  document.getElementById('t-place').value=t.place||'';
+  document.getElementById('t-type').value=t.type||'남단';
+  document.getElementById('t-teams').value=t.teams||'';
+  document.getElementById('t-rank').value=t.rank||'';
+  document.getElementById('t-goal').value=t.goal||'';
+  document.getElementById('t-good').value=t.good||'';
+  document.getElementById('t-improve').value=t.improve||'';
+  document.getElementById('t-memo').value=t.memo||'';
+  // 대진표 복원
+  document.getElementById('bracket-rounds').innerHTML='';
+  bracketRoundCount=0;
+  (t.rounds||[]).forEach(r=>{addBracketRound();const n=bracketRoundCount;
+    document.getElementById('r'+n+'-name').value=r.name||'';
+    document.getElementById('r'+n+'-myscore').value=r.myscore||'';
+    document.getElementById('r'+n+'-oppscore').value=r.oppscore||'';
+    document.getElementById('r'+n+'-opp').value=r.opp||'';
+    document.getElementById('r'+n+'-result').value=r.result||'승';
+  });
+  openModal('modal-tourney');
+};
+window.deleteTourney=async function(id){
+  if(!confirm('삭제?'))return;
+  await delItem('tourneys',id);
+  state.tourneys=state.tourneys.filter(t=>t.id!==id);
+  renderTourneys();renderCalendar();showToast('삭제');
+};
+function renderTourneys(){
+  const el=document.getElementById('tourney-list');if(!el)return;
+  if(!state.tourneys.length){el.innerHTML='<p class="empty-msg">대회 기록을 추가해보세요 🏆</p>';return;}
+  el.innerHTML=state.tourneys.map(t=>{
+    const wins=(t.rounds||[]).filter(r=>r.result==='승').length;
+    const loses=(t.rounds||[]).filter(r=>r.result==='패').length;
+    return`<div class="card" style="cursor:pointer" onclick="openEditTourney('${t.id}')">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span style="font-size:22px">${t.rank&&t.rank.includes('🥇')?'🥇':t.rank&&t.rank.includes('🥈')?'🥈':t.rank&&t.rank.includes('🥉')?'🥉':'🏸'}</span>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700">${t.name||'대회명 없음'}</div>
+          <div style="font-size:12px;color:var(--text3)">${t.date}${t.place?' · '+t.place:''}${t.type?' · '+t.type:''}</div>
+        </div>
+        <button class="del-btn" onclick="event.stopPropagation();deleteTourney('${t.id}')">✕</button>
+      </div>
+      ${t.rank?`<div style="display:inline-block;background:var(--amber-light);color:#854F0B;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;margin-bottom:6px">${t.rank}</div>`:''}
+      ${(t.rounds||[]).length?`<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">
+        ${(t.rounds||[]).map(r=>`<div style="background:${r.result==='승'?'var(--green-light)':'var(--red-light)'};border-radius:6px;padding:4px 8px;font-size:12px">
+          <span style="font-weight:600">${r.name||'라운드'}</span> ${r.myscore}:${r.oppscore} <span style="color:${r.result==='승'?'var(--green-dark)':'#993C1D'};font-weight:600">${r.result}</span>
+        </div>`).join('')}
+      </div>`:''}
+      ${wins||loses?`<div style="font-size:12px;color:var(--text3)">${wins}승 ${loses}패</div>`:''}
+      ${t.good?`<div style="font-size:12px;color:var(--green-dark);margin-top:4px">✓ ${t.good}</div>`:''}
+    </div>`;
+  }).join('');
 }
 </script>
 </body>
