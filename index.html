@@ -933,9 +933,18 @@ function curFab() { const f = FAB[curPage]; if (!f) return null; if (Array.isArr
 function updateFab() { const f = curFab(); $('fab').style.display = (f && user) ? 'flex' : 'none'; if (f) $('fab-t').textContent = f[0]; }
 window.fabClick = () => { const f = curFab(); if (f) f[1](); };
 
-window.openM = id => { $(id).classList.add('open'); };
-window.closeM = id => { $(id).classList.remove('open'); };
-document.querySelectorAll('.mo').forEach(m => m.addEventListener('click', e => { if (e.target === m) m.classList.remove('open'); }));
+/* 입력창 열기·닫기
+   - 입력창 바깥(어두운 부분)을 눌러도 닫히지 않음: 드롭다운 선택창을 닫을 때 바깥 터치로 인식돼 입력창이 닫히던 버그 방지
+   - 휴대폰 '뒤로' 버튼: 앱을 떠나지 않고 열린 입력창만 닫음 */
+let popIgnore = 0;
+const anyOpen = () => document.querySelector('.mo.open');
+window.openM = id => { $(id).classList.add('open'); if (!(history.state && history.state.m)) history.pushState({ m: 1 }, ''); };
+window.closeM = id => { $(id).classList.remove('open'); setTimeout(() => { if (!anyOpen() && history.state && history.state.m) { popIgnore++; history.back(); } }, 0); };
+window.addEventListener('popstate', () => { if (popIgnore) { popIgnore--; return; } document.querySelectorAll('.mo.open').forEach(m => m.classList.remove('open')); });
+// 날짜 상세(보기 전용)만 바깥을 눌러 닫기 — 누르기 시작과 끝이 모두 바깥일 때만
+let downOn = null;
+$('m-day').addEventListener('pointerdown', e => { downOn = e.target; });
+$('m-day').addEventListener('click', e => { if (e.target === $('m-day') && downOn === $('m-day')) closeM('m-day'); });
 
 /* 공통 입력 부품: 별점·칩·버튼 묶음 */
 const F = {};   // 지금 열린 입력창의 선택값 보관
