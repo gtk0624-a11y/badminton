@@ -400,11 +400,11 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 
 <!-- 일지 -->
 <section id="page-log" class="page">
-  <div class="ph"><img data-kk alt=""><div><h1><span>일지</span></h1><div class="ph-sub">훈련 · 레슨 · 루틴 · 민턴일기</div></div></div>
+  <div class="ph"><img data-kk alt=""><div><h1><span>일지</span></h1><div class="ph-sub">훈련 · 레슨 · 루틴 · 운동일기</div></div></div>
   <div class="subtabs">
     <button class="subtab" data-s="logs" onclick="go('log','logs')">훈련·레슨 일지</button>
     <button class="subtab" data-s="routine" onclick="go('log','routine')">루틴</button>
-    <button class="subtab" data-s="diary" onclick="go('log','diary')">민턴일기</button>
+    <button class="subtab" data-s="diary" onclick="go('log','diary')">운동일기</button>
   </div>
   <div class="subpane" data-s="logs">
     <input class="search" id="log-q" placeholder="기술, 코치, 장소, 메모로 검색" oninput="renderLogs()">
@@ -426,7 +426,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
     <div class="sec-t">루틴 기록 히스토리</div>
     <div id="rt-hist"></div>
   </div>
-  <div class="subpane" data-s="diary"><div id="diary-list"></div></div>
+  <div class="subpane" data-s="diary"><div class="filters" id="diary-filters"></div><div id="diary-list"></div></div>
 </section>
 
 <!-- 경기 -->
@@ -595,13 +595,14 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
   <div class="btns"><button class="btn btn-d hidden" id="rtf-del" onclick="delRoutine()">삭제</button><button class="btn btn-o" onclick="closeM('m-rt')">취소</button><button class="btn btn-p" onclick="saveRoutine()">저장</button></div>
 </div></div>
 
-<!-- 민턴일기 -->
+<!-- 운동일기 -->
 <div class="mo" id="m-diary"><div class="md">
-  <div class="md-h"><img data-kk alt=""><b id="df-title">민턴일기 쓰기</b><button class="md-x" onclick="closeM('m-diary')">✕</button></div>
+  <div class="md-h"><img data-kk alt=""><b id="df-title">운동일기 쓰기</b><button class="md-x" onclick="closeM('m-diary')">✕</button></div>
   <div class="fg"><label>날짜 *</label><input type="date" id="df-date"></div>
+  <div class="fg"><label>오늘 한 운동 <small class="t-s">(여러 개 선택 가능)</small> <a class="ed" onclick="openLists('DIARY_SPORTS')">✏️ 목록</a></label><div class="chips" data-key="dsp" id="df-sport"></div></div>
   <div class="fg"><label>오늘의 기분</label><div class="chips" id="df-mood"></div></div>
   <div class="fg"><label>제목</label><input id="df-title-in" placeholder="오늘의 한 줄"></div>
-  <div class="fg"><label>일기 *</label><textarea id="df-content" style="min-height:150px" placeholder="오늘 배드민턴 어땠나요?"></textarea></div>
+  <div class="fg"><label>일기 *</label><textarea id="df-content" style="min-height:150px" placeholder="오늘 운동 어땠나요? 배드민턴, 웨이트, 무엇이든"></textarea></div>
   <div class="btns"><button class="btn btn-d hidden" id="df-del" onclick="delDiary()">삭제</button><button class="btn btn-o" onclick="closeM('m-diary')">취소</button><button class="btn btn-p" onclick="saveDiary()">저장</button></div>
 </div></div>
 
@@ -785,6 +786,7 @@ provider.setCustomParameters({ prompt: 'select_account' });
 
 /* ═════ 2. 고정 목록 (자주 고칠 곳) ═════ */
 const LOG_TYPES = ['훈련','레슨','웨이트','대회','자체게임'];
+let DIARY_SPORTS = ['배드민턴','웨이트','레슨','러닝','걷기','기타'];
 let BODY_PARTS = ['가슴','등','하체','어깨','팔','코어','전신','유산소'];
 let LIFTS = ['스쿼트','벤치프레스','데드리프트','오버헤드프레스','바벨로우','풀업','랫풀다운','레그프레스','런지','루마니안 데드리프트','인클라인 벤치','덤벨프레스','덤벨로우','사이드 레터럴 레이즈','바이셉 컬','트라이셉 익스텐션','카프레이즈','플랭크','힙쓰러스트','레그컬','레그익스텐션','케이블 플라이','딥스','푸시업','줄넘기','러닝머신'];
 let SKILLS = ['하이클리어','드롭','스매시','점프스매시','드라이브','푸시','헤어핀','언더클리어','서비스','리시브','수비','네트킬','풋워크','로테이션','백핸드','포핸드'];
@@ -797,7 +799,7 @@ const FEE_CAT = '레슨비'; // 레슨비는 'equipment' 저장소 안에 이 �
 const DEF = {};
 let EXP_CATS = ['거트비','셔틀콕','대회참가비','클럽회비','용품·소모품','기타']; // 가계부 지출 분류 (ledger:true 로 'equipment' 저장소에 저장)
 const BOOK_COLORS = { 레슨비:'var(--sky)', 장비:'var(--court)', 거트비:'var(--amber)', 셔틀콕:'var(--violet)', 대회참가비:'var(--coral)', 클럽회비:'var(--navy3)', '용품·소모품':'#13A3B5', 기타:'var(--ink3)' };
-['BODY_PARTS','LIFTS','SKILLS','CORRECTIONS','PAINS','RT_CATS','EXP_CATS'].forEach(k => DEF[k] = eval(k).slice());
+['DIARY_SPORTS','BODY_PARTS','LIFTS','SKILLS','CORRECTIONS','PAINS','RT_CATS','EXP_CATS'].forEach(k => DEF[k] = eval(k).slice());
 const MY_CLUB = '위너';    // 상대방 '클럽별' 정렬에서 우리 클럽으로 묶을 이름
 const COLS = ['logs','routines','events','memos','equipment','players','games','clubmatches','routineLogs','diaries','tourneys'];
 
@@ -1009,9 +1011,9 @@ const gears = () => S.equipment.filter(e => e.category !== FEE_CAT && !e.ledger)
 const settingsDoc = () => S.memos.find(m => m.settings);
 const memoList = () => S.memos.filter(m => !m.settings && !m.goal);
 const goalList = () => S.memos.filter(m => m.goal);
-const LIST_INFO = { SKILLS: '배드민턴 기술', CORRECTIONS: '코치 교정 포인트', PAINS: '불편한 부위', BODY_PARTS: '웨이트 운동 부위', LIFTS: '웨이트 종목', RT_CATS: '루틴 카테고리', EXP_CATS: '가계부 지출 분류' };
+const LIST_INFO = { DIARY_SPORTS: '운동일기 운동 종류', SKILLS: '배드민턴 기술', CORRECTIONS: '코치 교정 포인트', PAINS: '불편한 부위', BODY_PARTS: '웨이트 운동 부위', LIFTS: '웨이트 종목', RT_CATS: '루틴 카테고리', EXP_CATS: '가계부 지출 분류' };
 function applyLists() { const L = (settingsDoc() || {}).lists || {};
-  BODY_PARTS = L.BODY_PARTS || DEF.BODY_PARTS; LIFTS = L.LIFTS || DEF.LIFTS; SKILLS = L.SKILLS || DEF.SKILLS; CORRECTIONS = L.CORRECTIONS || DEF.CORRECTIONS; PAINS = L.PAINS || DEF.PAINS; RT_CATS = L.RT_CATS || DEF.RT_CATS; EXP_CATS = L.EXP_CATS || DEF.EXP_CATS; }
+  DIARY_SPORTS = L.DIARY_SPORTS || DEF.DIARY_SPORTS; BODY_PARTS = L.BODY_PARTS || DEF.BODY_PARTS; LIFTS = L.LIFTS || DEF.LIFTS; SKILLS = L.SKILLS || DEF.SKILLS; CORRECTIONS = L.CORRECTIONS || DEF.CORRECTIONS; PAINS = L.PAINS || DEF.PAINS; RT_CATS = L.RT_CATS || DEF.RT_CATS; EXP_CATS = L.EXP_CATS || DEF.EXP_CATS; }
 const ordered = (list, set) => [...list.filter(v => set.has(v)), ...[...set].filter(v => !list.includes(v))];
 window.openLists = (focus) => {
   applyLists();
@@ -1424,29 +1426,41 @@ window.saveRoutine = () => {
 };
 window.delRoutine = () => { if (!editRtId || !confirm('이 루틴 항목을 삭제할까요?')) return; W(delItem('routines', editRtId), '삭제했습니다'); closeM('m-rt'); };
 
-/* ═════ 11. 민턴일기 ═════ */
+/* ═════ 11. 운동일기 ═════ */
 let editDiaryId = null;
 window.openDiary = (id = null) => {
   const d = id ? S.diaries.find(x => x.id === id) : null; editDiaryId = d?.id || null;
-  $('df-title').textContent = d ? '일기 수정' : '민턴일기 쓰기'; $('df-del').classList.toggle('hidden', !d);
+  $('df-title').textContent = d ? '일기 수정' : '운동일기 쓰기'; $('df-del').classList.toggle('hidden', !d);
   setV('df-date', d?.date || today()); setV('df-title-in', d?.title); setV('df-content', d?.content);
   F.mood = d?.mood || '';
+  // 예전 일기(종목 없음)는 배드민턴으로 / 새 일기는 오늘 쓴 일지의 유형으로 미리 선택
+  const todayTypes = S.logs.filter(l => l.date === (d?.date || today())).map(l => l.type === '웨이트' ? '웨이트' : l.type === '레슨' ? '레슨' : '배드민턴');
+  F.dsp = new Set(d ? (d.sports || ['배드민턴']) : todayTypes);
+  drawChips('df-sport', DIARY_SPORTS, F.dsp);
   $('df-mood').innerHTML = MOODS.map(m => `<button type="button" class="mood${F.mood === m ? ' on' : ''}" data-m="${m}">${m}</button>`).join('');
   $('df-mood').onclick = e => { const b = e.target.closest('[data-m]'); if (!b) return; F.mood = F.mood === b.dataset.m ? '' : b.dataset.m; $('df-mood').querySelectorAll('.mood').forEach(x => x.classList.toggle('on', x.dataset.m === F.mood)); };
   openM('m-diary');
 };
 window.saveDiary = () => {
-  const data = { date: getV('df-date'), title: getV('df-title-in'), content: getV('df-content'), mood: F.mood || '' };
+  const data = { date: getV('df-date'), title: getV('df-title-in'), content: getV('df-content'), mood: F.mood || '', sports: ordered(DIARY_SPORTS, F.dsp) };
   if (!data.date) { toast('날짜를 입력해 주세요'); return; } if (!data.content) { toast('일기 내용을 써 주세요'); return; }
-  if (editDiaryId) W(updItem('diaries', editDiaryId, data), '수정했습니다'); else { W(addItem('diaries', data), '일기를 저장했습니다 ✍️'); setTimeout(() => cheer('민턴일기 저장 완료'), 400); }
+  if (editDiaryId) W(updItem('diaries', editDiaryId, data), '수정했습니다'); else { W(addItem('diaries', data), '일기를 저장했습니다 ✍️'); setTimeout(() => cheer('운동일기 저장 완료'), 400); }
   closeM('m-diary');
 };
 window.delDiary = () => { if (!editDiaryId || !confirm('이 일기를 삭제할까요?')) return; W(delItem('diaries', editDiaryId), '삭제했습니다'); closeM('m-diary'); };
+let diaryFilter = '전체';
+window.setDiaryFilter = t => { diaryFilter = t; renderDiaries(); };
+const dSports = d => d.sports && d.sports.length ? d.sports : ['배드민턴'];
 function renderDiaries() {
-  $('diary-list').innerHTML = S.diaries.length ? S.diaries.map(d => `<div class="card tap" onclick="openDiary('${d.id}')">
-    <div class="row"><span style="font-size:30px">${esc(d.mood || '🏸')}</span><div class="grow"><div class="t-b">${esc(d.title || '(제목 없음)')}</div><div class="t-s">${fmtD(d.date)} · ${esc((d.date||'').slice(0,4))}</div></div></div>
+  const cats = ['전체', ...new Set([...DIARY_SPORTS, ...S.diaries.flatMap(dSports)])].filter(c => c === '전체' || S.diaries.some(d => dSports(d).includes(c)));
+  if (!cats.includes(diaryFilter)) diaryFilter = '전체';
+  $('diary-filters').innerHTML = cats.length > 2 ? cats.map(t => `<button class="fbtn${diaryFilter === t ? ' active' : ''}" onclick="setDiaryFilter('${esc(t)}')">${esc(t)} ${t === '전체' ? S.diaries.length : S.diaries.filter(d => dSports(d).includes(t)).length}</button>`).join('') : '';
+  const list = diaryFilter === '전체' ? S.diaries : S.diaries.filter(d => dSports(d).includes(diaryFilter));
+  $('diary-list').innerHTML = list.length ? list.map(d => `<div class="card tap" onclick="openDiary('${d.id}')">
+    <div class="row"><span style="font-size:30px">${esc(d.mood || '✍️')}</span><div class="grow"><div class="t-b">${esc(d.title || '(제목 없음)')}</div><div class="t-s">${fmtD(d.date)} · ${esc((d.date||'').slice(0,4))}</div></div></div>
+    <div style="margin-top:6px">${dSports(d).map(x => `<span class="tag${x === '웨이트' ? ' o' : ''}">${esc(x)}</span>`).join('')}</div>
     <div class="t-m pre" style="margin-top:8px;max-height:84px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 60%,transparent)">${esc(d.content)}</div></div>`).join('')
-    : emptyBox('첫 민턴일기를 써 보세요 ✍️');
+    : emptyBox('첫 운동일기를 써 보세요 ✍️<br>배드민턴·웨이트 무엇이든 좋아요.');
 }
 
 /* ═════ 12. 경기 · 상대방 ═════ */
@@ -1737,7 +1751,7 @@ window.openDay = ds => {
   if (G.length) { const w = G.filter(g => g.result === '승').length; h += `<div class="lb" style="margin-top:10px">🏆 경기 ${G.length}경기 · ${w}승 ${G.length - w}패</div>` + G.map(g => `<div class="card tap row" style="padding:10px 12px" onclick="openGame('${g.id}')"><span class="badge b-${g.result === '승' ? '승' : '패'}">${esc(g.result)}</span><span class="grow t-m">vs ${esc(pm[g.opponent1]?.name || '?')}${g.opponent2 ? '+' + esc(pm[g.opponent2]?.name || '?') : ''}</span><b class="t-s">${setsOf(g).map(s => s.join(':')).join(' / ')}</b></div>`).join(''); }
   if (T.length) h += `<div class="lb" style="margin-top:10px">🥇 대회</div>` + T.map(x => `<div class="card tap" onclick="openTourney('${x.id}')"><b>${esc(x.name)}</b> ${x.rank ? `<span class="tag y">${esc(x.rank)}</span>` : ''}</div>`).join('');
   if (R) h += `<div class="card tap" onclick="closeM('m-day');go('log','routine');setRoutineDate('${ds}')">✅ 루틴 ${R.done||0}/${R.total||0} 완료 · <b>${R.rate||0}%</b></div>`;
-  if (D.length) h += D.map(d => `<div class="card tap" onclick="openDiary('${d.id}')">${esc(d.mood || '✍️')} <b>${esc(d.title || '민턴일기')}</b><div class="t-m pre" style="margin-top:4px">${esc(String(d.content||'').slice(0,120))}</div></div>`).join('');
+  if (D.length) h += D.map(d => `<div class="card tap" onclick="openDiary('${d.id}')">${esc(d.mood || '✍️')} <b>${esc(d.title || '운동일기')}</b><div class="t-m pre" style="margin-top:4px">${esc(String(d.content||'').slice(0,120))}</div></div>`).join('');
   if (!h) h = '<div class="empty">이 날의 기록이 없습니다</div>';
   h += `<div class="btns"><button class="btn btn-o" onclick="closeM('m-day');openEvent(null,'${ds}')">+ 일정</button><button class="btn btn-n" onclick="closeM('m-day');openLog(null,'훈련');setV2('lf-date','${ds}')">+ 일지</button><button class="btn btn-p" onclick="closeM('m-day');openGame();setV2('gf-date','${ds}')">+ 경기</button></div>`;
   $('day-body').innerHTML = h; openM('m-day');
