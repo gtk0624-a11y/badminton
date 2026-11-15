@@ -885,13 +885,22 @@ try { const t = localStorage.getItem('sl_title'); if (t) { $('login-title').text
     box.classList.remove('hidden');
   }
 })();
-/* 새 버전 자동 적용: 휴대폰이 예전 화면을 기억(캐시)하고 있으면 최신 파일과 비교해 한 번 새로고침 */
-const APP_VER = '20261115175305';
-(async () => { try {
+/* 새 버전 자동 적용
+   - 열 때, 앱으로 돌아올 때, 5분마다 최신 파일과 비교
+   - 입력창이 열려 있지 않으면 바로 새 버전으로 이동, 쓰는 중이면 위쪽 노란 띠로 알림(쓰던 내용 보호) */
+const APP_VER = '20261115175524';
+function goNewVer(v) { location.replace(location.pathname + '?v=' + v); }
+async function checkVer() { try {
   const t = await (await fetch(location.pathname + '?ck=' + Date.now(), { cache: 'no-store' })).text();
-  const m = t.match(/const APP_VER = '([^']+)'/);
-  if (m && m[1] !== APP_VER && sessionStorage.getItem('ul_reload') !== m[1]) { sessionStorage.setItem('ul_reload', m[1]); location.reload(); }
-} catch (e) {} })();
+  const m = t.match(/const APP_VER = '([^']+)'/); if (!m || m[1] === APP_VER) return;
+  if (!document.querySelector('.mo.open')) { if (sessionStorage.getItem('ul_reload') !== m[1]) { sessionStorage.setItem('ul_reload', m[1]); goNewVer(m[1]); } return; }
+  let bar = document.getElementById('upd-bar');
+  if (!bar) { bar = document.createElement('button'); bar.id = 'upd-bar'; bar.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:900;border:none;background:#FFC83D;color:#14284B;font-weight:900;font-size:14px;padding:12px;font-family:inherit'; document.body.appendChild(bar); }
+  bar.textContent = '✨ 새 버전이 나왔어요 · 저장한 뒤 여기를 눌러 적용하세요'; bar.onclick = () => goNewVer(m[1]);
+} catch (e) {} }
+checkVer();
+document.addEventListener('visibilitychange', () => { if (!document.hidden) checkVer(); });
+setInterval(checkVer, 5 * 60 * 1000);
 window.signIn = async () => { try { await signInWithPopup(auth, provider); } catch (e) { console.error(e); toast(korErr(e)); } };
 window.signOutNow = async () => { if (!confirm('로그아웃 하시겠습니까?')) return; await fbSignOut(auth); };
 
