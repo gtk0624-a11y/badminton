@@ -77,8 +77,8 @@ button{cursor:pointer}
 .hero-date{font-size:12px;font-weight:600;opacity:.75}
 .hero-hi{position:relative;font-size:24px;font-weight:900;letter-spacing:-1px;margin-top:4px;line-height:1.25;max-width:64%}
 .hero-hi b{color:var(--yellow)}
-.logout{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:5px 11px;font-size:11px;font-weight:600}
-.hero-kk{position:absolute;right:6px;top:48px;width:118px;animation:bob 2.8s ease-in-out infinite;filter:drop-shadow(0 10px 12px rgba(0,0,0,.35));cursor:pointer}
+.logout{position:relative;z-index:3;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:5px 11px;font-size:11px;font-weight:600}
+.hero-kk{position:absolute;right:6px;top:62px;width:118px;animation:bob 2.8s ease-in-out infinite;filter:drop-shadow(0 10px 12px rgba(0,0,0,.35));cursor:pointer}
 .bubble{position:relative;margin-top:12px;max-width:66%;background:#fff;color:var(--ink);border-radius:16px 16px 4px 16px;padding:10px 12px;font-size:13px;font-weight:600;line-height:1.45;box-shadow:0 6px 16px rgba(0,0,0,.18);cursor:pointer}
 .hero-stats{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:16px}
 .hs{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:10px 4px;text-align:center;cursor:pointer}
@@ -222,6 +222,17 @@ details.acc .card{box-shadow:none;border:1px solid var(--line)}
 .gb-row{display:flex;gap:16px;margin-top:8px;font-size:12px;font-weight:600;max-width:70%;flex-wrap:wrap}
 .gb-row b{display:block;font-size:16px;color:#fff;font-weight:900}
 
+/* 제목·핵심 포인트 */
+.hero-title{position:relative;z-index:2;display:flex;align-items:center;flex-wrap:wrap;gap:6px;font-size:17px;font-weight:900;letter-spacing:.2px;color:var(--yellow);margin-bottom:6px;cursor:pointer}
+.hero-title small{color:rgba(255,255,255,.6);font-weight:600}
+.pen{background:rgba(255,255,255,.14);border:none;color:#fff;border-radius:8px;padding:2px 7px;font-size:11px;font-weight:700}
+.pts{background:#fff;border-radius:var(--r);padding:14px 15px;margin-bottom:14px;box-shadow:var(--sh);border:2px solid var(--yellow)}
+.pts-h{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:900;margin-bottom:8px}
+.pts-h button{margin-left:auto;background:var(--yellow3);border:none;color:#8A5B00;border-radius:10px;padding:6px 11px;font-size:12px;font-weight:800}
+.pt{display:flex;gap:9px;align-items:flex-start;padding:7px 0;border-top:1px dashed var(--line);font-size:15px;font-weight:700;line-height:1.45}
+.pt:first-of-type{border-top:none}
+.pt i{font-style:normal;flex-shrink:0;width:22px;height:22px;border-radius:7px;background:var(--navy);color:var(--yellow);font-size:12px;font-weight:900;display:grid;place-items:center;margin-top:1px}
+
 /* FAB */
 #fab{position:fixed;right:max(16px,calc(50% - 304px));bottom:calc(92px + env(safe-area-inset-bottom));z-index:120;height:56px;padding:0 20px 0 16px;border-radius:28px;border:none;background:var(--yellow);color:var(--navy);font-size:15px;font-weight:900;box-shadow:0 10px 24px rgba(242,157,18,.45);display:none;align-items:center;gap:6px}
 #fab i{font-style:normal;font-size:26px;line-height:1;margin-top:-2px}
@@ -306,7 +317,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 <div id="login">
   <div class="login-card">
     <img class="login-kk" data-kk alt="꿈송이">
-    <div class="login-title">Shuttle<b>Log</b></div>
+    <div class="login-title" id="login-title">Shuttle<b>Log</b></div>
     <div class="login-sub">꿈송이와 함께 쓰는 배드민턴 기록장<br>레슨 · 훈련 · 경기 · 장비를 한곳에</div>
     <div id="inapp-box" class="inapp hidden"></div>
     <button class="g-btn" onclick="signIn()"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">Google로 시작하기</button>
@@ -324,12 +335,14 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 <!-- 홈 -->
 <section id="page-home" class="page active">
   <div class="hero">
+    <div class="hero-title" onclick="openSettings()"><span id="h-title">🏸 ShuttleLog</span><small id="h-sub"></small><button class="pen" type="button">✏️ 제목</button></div>
     <div class="hero-top"><div class="hero-date" id="h-date"></div><button class="logout" onclick="signOutNow()">로그아웃</button></div>
     <div class="hero-hi" id="h-hi">오늘도 한 게임?</div>
     <img class="hero-kk" data-kk alt="꿈송이" onclick="nextBubble()">
     <div class="bubble" id="h-bubble" onclick="nextBubble()">...</div>
     <div class="hero-stats" id="h-stats"></div>
   </div>
+  <div id="h-points"></div>
   <div class="quick">
     <button class="qb t1" onclick="openLog(null,'훈련')"><i>🏸</i>훈련 일지</button>
     <button class="qb t2" onclick="openLog(null,'레슨')"><i>🎓</i>레슨 일지</button>
@@ -655,6 +668,17 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
   <div class="btns"><button class="btn btn-d hidden" id="nf-del" onclick="delMemo()">삭제</button><button class="btn btn-o" onclick="closeM('m-memo')">취소</button><button class="btn btn-p" onclick="saveMemo()">저장</button></div>
 </div></div>
 
+<!-- 제목·핵심 포인트 -->
+<div class="mo" id="m-set"><div class="md">
+  <div class="md-h"><img data-kk alt=""><b>제목 · 핵심 포인트</b><button class="md-x" onclick="closeM('m-set')">✕</button></div>
+  <div class="fg"><label>앱 제목</label><input id="sf-title" maxlength="30" placeholder="예: 도디쌤의 민턴 일지"></div>
+  <div class="fg"><label>부제목 (선택)</label><input id="sf-sub" maxlength="40" placeholder="예: 위너클럽 · 점프스매시 정복"></div>
+  <div class="fg"><label>나의 핵심 포인트 <small class="t-s">(한 줄에 하나씩 · 홈 화면 맨 위에 항상 보임)</small></label>
+    <textarea id="sf-points" style="min-height:170px" placeholder="오른발 먼저 빼고 점프&#10;타점은 머리 앞에서&#10;스매시 후 바로 리커버리&#10;서브는 짧게, 리시브는 낮게"></textarea></div>
+  <div class="fg"><label><input type="checkbox" id="sf-bubble" style="width:auto;margin-right:6px;vertical-align:middle">꿈송이 말풍선에도 핵심 포인트 보여 주기</label></div>
+  <div class="btns"><button class="btn btn-o" onclick="closeM('m-set')">취소</button><button class="btn btn-p" onclick="saveSettings()">저장</button></div>
+</div></div>
+
 <!-- 날짜 상세 -->
 <div class="mo" id="m-day"><div class="md">
   <div class="md-h"><img data-kk alt=""><b id="day-title"></b><button class="md-x" onclick="closeM('m-day')">✕</button></div>
@@ -730,6 +754,7 @@ function clean(o) { const r = {}; Object.keys(o).forEach(k => { if (o[k] !== und
 /* ═════ 4. 로그인 ═════ */
 let user = null;
 const UA = navigator.userAgent || '';
+try { const t = localStorage.getItem('sl_title'); if (t) { $('login-title').textContent = t; document.title = t + ' · 배드민턴 기록'; } } catch (e) {}
 (function inappGuide(){
   const box = $('inapp-box');
   if (/KAKAOTALK/i.test(UA)) {
@@ -877,6 +902,26 @@ function renderAll() {
 const lessons = () => S.logs.filter(l => l.type === '레슨');
 const fees = () => S.equipment.filter(e => e.category === FEE_CAT);
 const gears = () => S.equipment.filter(e => e.category !== FEE_CAT && !e.ledger);
+// 제목·핵심 포인트는 'memos' 저장소 안에 settings:true 문서 하나로 저장 (보안 규칙 변경 불필요)
+const settingsDoc = () => S.memos.find(m => m.settings);
+const memoList = () => S.memos.filter(m => !m.settings);
+function SET() { const d = settingsDoc() || {}; return { title: d.appTitle || '🏸 ShuttleLog', sub: d.appSub || '', points: Array.isArray(d.points) ? d.points : [], bubble: d.pointsInBubble !== false }; }
+function applyTitle() {
+  const t = SET();
+  $('h-title').textContent = t.title; $('h-sub').textContent = t.sub;
+  document.title = t.title + ' · 배드민턴 기록';
+  try { localStorage.setItem('sl_title', t.title); } catch (e) {}
+}
+window.openSettings = () => {
+  const t = SET(); setV('sf-title', t.title); setV('sf-sub', t.sub); setV('sf-points', t.points.join('\n')); $('sf-bubble').checked = t.bubble; openM('m-set');
+};
+window.saveSettings = () => {
+  const data = { settings: true, category: '설정', title: '', content: '', appTitle: getV('sf-title') || '🏸 ShuttleLog', appSub: getV('sf-sub'),
+    points: $('sf-points').value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 20), pointsInBubble: $('sf-bubble').checked };
+  const d = settingsDoc();
+  W(d ? updItem('memos', d.id, data) : addItem('memos', data), '저장했습니다 📌');
+  closeM('m-set');
+};
 const exps = () => S.equipment.filter(e => e.ledger);
 // 가계부 = 레슨비 + 장비 구입(가격 있는 것) + 기타 지출
 function bookItems() {
@@ -917,6 +962,12 @@ function renderHome() {
   if (lastL && lastL.pain?.length && dayDiff(lastL.date) >= -3) bubbles.push(`${lastL.pain.join('·')} 괜찮아요? 무리하지 말고 스트레칭부터!`);
   if (recentG.length >= 5) bubbles.push(`최근 ${recentG.length}경기 ${w}승 ${recentG.length - w}패! ${w >= recentG.length/2 ? '좋은 흐름이에요 🔥' : '다음 경기는 이길 차례!'}`);
   bi = Math.min(bi, bubbles.length - 1); $('h-bubble').textContent = bubbles[bi];
+
+  // 핵심 포인트
+  const st = SET(); applyTitle();
+  $('h-points').innerHTML = st.points.length ? `<div class="pts"><div class="pts-h">📌 나의 핵심 포인트<button onclick="openSettings()">✏️ 편집</button></div>${st.points.map((p,i) => `<div class="pt"><i>${i+1}</i><span>${esc(p)}</span></div>`).join('')}</div>`
+    : `<div class="pts" style="border-style:dashed;cursor:pointer" onclick="openSettings()"><div class="pts-h" style="margin:0">📌 나의 핵심 포인트<button>+ 쓰기</button></div><div class="t-s" style="margin-top:6px">코치에게 들은 말, 꼭 기억할 것을 적어 두면 홈 화면에 항상 보입니다.</div></div>`;
+  if (st.bubble && st.points.length) st.points.forEach(p => bubbles.push('잊지 마요! 📌 ' + p));
 
   // 숙제 카드
   $('h-hw').innerHTML = lastHw ? `<div class="hw card tap" style="box-shadow:var(--sh)" onclick="openLog('${lastHw.id}')">
@@ -1507,7 +1558,7 @@ function renderGear() {
       <div class="grow"><div class="t-b" style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(i.title || i.cat)}</div><div class="t-s">${fmtD(i.date)}${i.memo ? ' · ' + esc(i.memo) : ''}</div></div>
       <b style="white-space:nowrap">${won(i.amount)}</b></div>`).join('') : '';
   // 메모
-  $('memo-list').innerHTML = S.memos.length ? [...S.memos].sort((a,b) => (b.updatedAt2 || b.updatedDate || '').localeCompare(a.updatedAt2 || a.updatedDate || '')).map(m => `<div class="card tap" onclick="openMemo('${m.id}')"><div class="row"><span class="badge b-기타">${esc(m.category || '일반')}</span><b class="grow">${esc(m.title || '')}</b><span class="t-s">${esc(m.updatedDate || (typeof m.updatedAt === 'string' ? m.updatedAt : ''))}</span></div><div class="t-m pre" style="margin-top:6px">${esc(m.content)}</div></div>`).join('') : emptyBox('전략·부상·목표 메모를 남겨 보세요');
+  $('memo-list').innerHTML = memoList().length ? memoList().sort((a,b) => (b.updatedAt2 || b.updatedDate || '').localeCompare(a.updatedAt2 || a.updatedDate || '')).map(m => `<div class="card tap" onclick="openMemo('${m.id}')"><div class="row"><span class="badge b-기타">${esc(m.category || '일반')}</span><b class="grow">${esc(m.title || '')}</b><span class="t-s">${esc(m.updatedDate || (typeof m.updatedAt === 'string' ? m.updatedAt : ''))}</span></div><div class="t-m pre" style="margin-top:6px">${esc(m.content)}</div></div>`).join('') : emptyBox('전략·부상·목표 메모를 남겨 보세요');
 }
 let editEqId = null, editFeeId = null, editMemoId = null;
 window.openEquip = (id = null) => {
