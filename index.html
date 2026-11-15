@@ -282,6 +282,22 @@ details.sec.weight>summary{background:#FFF1E8;color:#C2410C}
 #m-log .fg input:focus,#m-log .fg textarea:focus,#m-log .fg select:focus{border-color:var(--acc)}
 #m-log .chips:not(.warn):not(.amb) .chip.on{background:var(--acc);border-color:var(--acc)}
 
+.ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.ph-it{position:relative;aspect-ratio:1;border-radius:12px;overflow:hidden;background:#EEF1F6}
+.ph-it img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.ph-it button{position:absolute;top:4px;right:4px;width:26px;height:26px;border-radius:50%;border:none;background:rgba(0,0,0,.55);color:#fff;font-weight:900;font-size:12px}
+.ph-it i{position:absolute;left:4px;bottom:4px;font-style:normal;font-size:10px;font-weight:800;background:var(--yellow);color:var(--navy);padding:2px 6px;border-radius:6px}
+.ph-strip{display:flex;gap:6px;margin-top:8px;align-items:center}
+.ph-strip img{width:64px;height:64px;object-fit:cover;border-radius:10px;cursor:zoom-in}
+.ph-strip span{font-size:12px;font-weight:800;color:var(--ink3)}
+#ph-view{position:fixed;inset:0;background:rgba(5,10,20,.92);z-index:800;display:none;align-items:center;justify-content:center}
+#ph-view.on{display:flex}
+#ph-view img{max-width:96vw;max-height:86vh;border-radius:8px}
+#ph-view button{position:absolute;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:22px;font-weight:900;width:46px;height:46px;border-radius:50%}
+#ph-view .pv-x{top:calc(14px + env(safe-area-inset-top));right:14px}
+#ph-view .pv-l{left:10px;top:50%}#ph-view .pv-r{right:10px;top:50%}
+#ph-view .pv-n{position:absolute;bottom:calc(20px + env(safe-area-inset-bottom));color:#fff;font-weight:800}
+
 /* FAB */
 #fab{position:fixed;right:max(16px,calc(50% - 304px));bottom:calc(92px + env(safe-area-inset-bottom));z-index:120;height:56px;padding:0 20px 0 16px;border-radius:28px;border:none;background:var(--yellow);color:var(--navy);font-size:15px;font-weight:900;box-shadow:0 10px 24px rgba(242,157,18,.45);display:none;align-items:center;gap:6px}
 #fab i{font-style:normal;font-size:26px;line-height:1;margin-top:-2px}
@@ -594,6 +610,10 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
     <div class="fg"><label>다음 목표</label><input id="lf-next" placeholder="예: 다음 게임에서 짧은 서비스 성공률 높이기"></div>
     <div class="fg"><label>메모</label><textarea id="lf-memo" style="min-height:56px"></textarea></div>
   </div></details>
+  <details class="sec" open><summary>📷 사진 <small>최대 6장 · 휴대폰 사진이 자동으로 작게 줄어 저장됩니다</small></summary><div class="in">
+    <div class="ph-grid" id="lf-photos"></div>
+    <label class="btn btn-o" style="display:block;text-align:center;margin-bottom:12px;cursor:pointer">📷 사진 추가<input type="file" accept="image/*" multiple hidden onchange="addPhotos(this,'lf')"></label>
+  </div></details>
   <div class="btns"><button class="btn btn-d hidden" id="lf-del" onclick="delLog()">삭제</button><button class="btn btn-o" onclick="closeM('m-log')">취소</button><button class="btn btn-p" onclick="saveLog()">저장</button></div>
 </div></div>
 <datalist id="dl-place"></datalist><datalist id="dl-coach"></datalist>
@@ -615,6 +635,10 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
   <div class="fg"><label>오늘의 기분</label><div class="chips" id="df-mood"></div></div>
   <div class="fg"><label>제목</label><input id="df-title-in" placeholder="오늘의 한 줄"></div>
   <div class="fg"><label>일기 *</label><textarea id="df-content" style="min-height:150px" placeholder="오늘 운동 어땠나요? 배드민턴, 웨이트, 무엇이든"></textarea></div>
+  <details class="sec" open><summary>📷 사진 <small>최대 6장 · 휴대폰 사진이 자동으로 작게 줄어 저장됩니다</small></summary><div class="in">
+    <div class="ph-grid" id="df-photos"></div>
+    <label class="btn btn-o" style="display:block;text-align:center;margin-bottom:12px;cursor:pointer">📷 사진 추가<input type="file" accept="image/*" multiple hidden onchange="addPhotos(this,'df')"></label>
+  </div></details>
   <div class="btns"><button class="btn btn-d hidden" id="df-del" onclick="delDiary()">삭제</button><button class="btn btn-o" onclick="closeM('m-diary')">취소</button><button class="btn btn-p" onclick="saveDiary()">저장</button></div>
 </div></div>
 
@@ -779,7 +803,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signOut as fbSignOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, doc, addDoc, deleteDoc, updateDoc, getDoc, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 /* ═════ 1. Firebase 설정 (기존 ShuttleLog 프로젝트 그대로 — 바꾸면 기존 기록이 안 보입니다) ═════ */
 const firebaseConfig = {
@@ -862,7 +886,7 @@ try { const t = localStorage.getItem('sl_title'); if (t) { $('login-title').text
   }
 })();
 /* 새 버전 자동 적용: 휴대폰이 예전 화면을 기억(캐시)하고 있으면 최신 파일과 비교해 한 번 새로고침 */
-const APP_VER = '20261115141143';
+const APP_VER = '20261115141454';
 (async () => { try {
   const t = await (await fetch(location.pathname + '?ck=' + Date.now(), { cache: 'no-store' })).text();
   const m = t.match(/const APP_VER = '([^']+)'/);
@@ -1028,7 +1052,61 @@ const fees = () => S.equipment.filter(e => e.category === FEE_CAT);
 const gears = () => S.equipment.filter(e => e.category !== FEE_CAT && !e.ledger);
 // 제목·핵심 포인트는 'memos' 저장소 안에 settings:true 문서 하나로 저장 (보안 규칙 변경 불필요)
 const settingsDoc = () => S.memos.find(m => m.settings);
-const memoList = () => S.memos.filter(m => !m.settings && !m.goal);
+const memoList = () => S.memos.filter(m => !m.settings && !m.goal && !m.photo);
+
+/* ── 사진 ──
+   원본 사진은 'photos' 저장소에 1장씩(최대 1280px로 줄여 약 200KB), 목록에 보일 작은 미리보기(약 6KB)는 일지 문서 안 photos 배열에 저장.
+   'photos' 저장이 보안 규칙에 막히면 'memos' 저장소에 photo:true 로 대신 저장 */
+const MAX_PH = 6;
+F.ph = { lf: [], df: [] };
+function loadImg(file) { return new Promise((ok, no) => { const u = URL.createObjectURL(file), im = new Image(); im.onload = () => { ok(im); setTimeout(() => URL.revokeObjectURL(u), 1000); }; im.onerror = () => no(new Error('이미지를 열 수 없습니다')); im.src = u; }); }
+function shrink(im, max, q) { const r = Math.min(1, max / Math.max(im.naturalWidth, im.naturalHeight)); const c = document.createElement('canvas'); c.width = Math.round(im.naturalWidth * r); c.height = Math.round(im.naturalHeight * r); const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(im, 0, 0, c.width, c.height); return c.toDataURL('image/jpeg', q); }
+window.addPhotos = async (inp, p) => {
+  const files = [...inp.files]; inp.value = '';
+  const room = MAX_PH - F.ph[p].filter(x => !x.del).length;
+  if (files.length > room) toast(`사진은 ${MAX_PH}장까지 넣을 수 있습니다`);
+  for (const f of files.slice(0, Math.max(0, room))) {
+    try { const im = await loadImg(f); let full = shrink(im, 1280, .75); if (full.length > 850000) full = shrink(im, 960, .65); F.ph[p].push({ id: null, full, thumb: shrink(im, 160, .55) }); }
+    catch (e) { toast('사진을 불러오지 못했습니다 (' + f.name + ')'); }
+  }
+  drawPhotos(p);
+};
+function drawPhotos(p) {
+  const list = F.ph[p].map((x,i) => ({ x, i })).filter(o => !o.x.del);
+  $(p + '-photos').innerHTML = list.map(o => `<div class="ph-it"><img src="${o.x.thumb}" alt="" onclick="viewPhotoEdit('${p}',${o.i})"><button type="button" onclick="F_delPhoto('${p}',${o.i})">✕</button>${o.x.id ? '' : '<i>새 사진</i>'}</div>`).join('') || '<div class="t-s" style="margin-bottom:10px">아직 사진이 없습니다</div>';
+}
+window.F_delPhoto = (p, i) => { const x = F.ph[p][i]; if (x.id) x.del = true; else F.ph[p].splice(i, 1); drawPhotos(p); };
+let phColOK = true;
+async function addPhotoDoc(data, owner) {
+  if (phColOK) { try { const r = await addDoc(col('photos'), { data, ...owner, createdAt: serverTimestamp() }); return { id: r.id, col: 'photos' }; } catch (e) { if (!String(e.code).includes('permission')) throw e; phColOK = false; } }
+  const r = await addDoc(col('memos'), { photo: true, category: '사진', title: '', content: '', data, ...owner, createdAt: serverTimestamp() }); return { id: r.id, col: 'memos' };
+}
+async function syncPhotos(colName, id, items) {
+  const keep = [];
+  for (const x of items) {
+    if (x.del) { if (x.id) await deleteDoc(dref(x.col || 'photos', x.id)).catch(() => {}); continue; }
+    if (x.id) { keep.push({ id: x.id, col: x.col || 'photos', thumb: x.thumb }); continue; }
+    const r = await addPhotoDoc(x.full, { ownerCol: colName, ownerId: id }); keep.push({ ...r, thumb: x.thumb });
+  }
+  await updateDoc(dref(colName, id), { photos: keep });
+}
+function photoChanged(p) { return F.ph[p].some(x => x.del || !x.id); }
+function initPhotos(p, rec) { F.ph[p] = (rec?.photos || []).map(x => ({ ...x })); drawPhotos(p); }
+async function delPhotosOf(rec) { for (const x of rec?.photos || []) await deleteDoc(dref(x.col || 'photos', x.id)).catch(() => {}); }
+// 사진 크게 보기 (원본은 그때 불러옴)
+let viewer = { list: [], i: 0 };
+async function showViewer() {
+  let v = $('ph-view'); if (!v) { v = document.createElement('div'); v.id = 'ph-view'; v.innerHTML = '<img alt=""><div class="pv-n"></div><button class="pv-x">✕</button><button class="pv-l">‹</button><button class="pv-r">›</button>'; document.body.appendChild(v);
+    v.querySelector('.pv-x').onclick = () => v.classList.remove('on'); v.querySelector('.pv-l').onclick = e => { e.stopPropagation(); viewer.i = (viewer.i - 1 + viewer.list.length) % viewer.list.length; showViewer(); };
+    v.querySelector('.pv-r').onclick = e => { e.stopPropagation(); viewer.i = (viewer.i + 1) % viewer.list.length; showViewer(); }; v.onclick = e => { if (e.target === v) v.classList.remove('on'); }; }
+  const x = viewer.list[viewer.i]; const img = v.querySelector('img'); img.src = x.full || x.thumb; v.classList.add('on');
+  v.querySelector('.pv-n').textContent = viewer.list.length > 1 ? `${viewer.i + 1} / ${viewer.list.length}` : '';
+  v.querySelectorAll('.pv-l,.pv-r').forEach(b => b.style.display = viewer.list.length > 1 ? '' : 'none');
+  if (!x.full && x.id) { try { const d = await getDoc(dref(x.col || 'photos', x.id)); if (d.exists()) { x.full = d.data().data; if (viewer.list[viewer.i] === x) img.src = x.full; } } catch (e) { toast('사진 원본을 불러오지 못했습니다'); } }
+}
+window.viewPhotos = (colName, id, i) => { const rec = S[colName].find(r => r.id === id); if (!rec?.photos?.length) return; viewer = { list: rec.photos.map(x => ({ ...x })), i }; showViewer(); };
+window.viewPhotoEdit = (p, i) => { const list = F.ph[p].filter(x => !x.del); viewer = { list, i: list.indexOf(F.ph[p][i]) }; showViewer(); };
+const photoStrip = (colName, r) => (r.photos || []).length ? `<div class="ph-strip">${r.photos.slice(0,4).map((x,i) => `<img src="${x.thumb}" alt="" onclick="event.stopPropagation();viewPhotos('${colName}','${r.id}',${i})">`).join('')}${r.photos.length > 4 ? `<span>+${r.photos.length - 4}</span>` : ''}</div>` : '';
 const goalList = () => S.memos.filter(m => m.goal);
 const LIST_INFO = { DIARY_SPORTS: '운동일기 운동 종류', SKILLS: '배드민턴 기술', CORRECTIONS: '코치 교정 포인트', PAINS: '불편한 부위', BODY_PARTS: '웨이트 운동 부위', LIFTS: '웨이트 종목', RT_CATS: '루틴 카테고리', EXP_CATS: '가계부 지출 분류' };
 function applyLists() { const L = (settingsDoc() || {}).lists || {};
@@ -1230,6 +1308,7 @@ function logCard(l) {
     ${drills.length ? `<div style="margin-top:6px">${drills.map(d => `<span class="tag">${esc(d.skill||'드릴')}${num(d.score) ? ' ' + '●'.repeat(d.score) + '○'.repeat(5 - d.score) : ''}</span>`).join('')}</div>` : ''}
     ${tags.length ? `<div style="margin-top:4px">${tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}${l.focusExtra ? `<span class="tag">${esc(l.focusExtra)}</span>` : ''}</div>` : (l.focus && l.type !== '웨이트' ? `<div class="t-m" style="margin-top:6px">🎯 ${esc(l.focus)}</div>` : '')}
     ${(l.corrections||[]).length ? `<div>${l.corrections.map(c => `<span class="tag y">${esc(c)}</span>`).join('')}</div>` : ''}
+    ${photoStrip('logs', l)}
     ${l.coachFeedback ? `<div class="line">💬 ${esc(l.coachFeedback)}</div>` : ''}
     ${l.good ? `<div class="line good">✓ ${esc(l.good)}</div>` : ''}
     ${l.improve ? `<div class="line bad">↑ ${esc(l.improve)}</div>` : ''}
@@ -1266,7 +1345,7 @@ window.openLog = (id = null, type = '훈련') => {
   F.corr = new Set(l?.corrections || []); F.pain = new Set(l?.pain || []);
   F.hwCheck = l?.hwCheck || '';
   F.drills = (l?.drills || []).map(d => ({ ...d }));
-  F.lifts = (l?.lifts || []).map(x => ({ ...x })); F.parts = new Set(l?.parts || []);
+  F.lifts = (l?.lifts || []).map(x => ({ ...x })); F.parts = new Set(l?.parts || []); initPhotos('lf', l);
   // 예전 기록: 집중기술 글자 → 태그로 변환
   let tags = l?.focusTags, extra = l?.focusExtra || '';
   if (l && !tags) {
@@ -1410,10 +1489,12 @@ window.saveLog = () => {
     drills: F.drills.filter(d => d.skill || String(d.content||'').trim()).map(d => ({ skill: d.skill || '', content: String(d.content||'').trim(), sets: String(d.sets||'').trim(), minutes: d.minutes === '' ? '' : String(d.minutes), score: Number(d.score) || 0 })),
     corrections: ordered(CORRECTIONS, F.corr), coachFeedback: getV('lf-fb'), homework: getV('lf-hw'), hwCheck: F.hwCheck || '', link: getV('lf-link'),
   });
-  if (editLogId) W(updItem('logs', editLogId, data), '수정했습니다 ✏️'); else { setTimeout(() => cheer(F.type + ' 일지 저장 완료'), 400); } if (!editLogId) W(addItem('logs', data), F.type === '레슨' ? '레슨 일지 저장! 숙제 잊지 마세요 📌' : F.type === '웨이트' ? `웨이트 저장! 총 볼륨 ${fmtKg(data.volume)} 💪` : '일지를 저장했습니다 🏸');
+  const phItems = F.ph.lf.slice(), phCh = photoChanged('lf'); if (phCh) toast('사진을 올리는 중입니다...');
+  const withPh = (p, msg) => W(p.then(id => phCh ? syncPhotos('logs', id, phItems) : null), msg);
+  if (editLogId) withPh(updItem('logs', editLogId, data).then(() => editLogId), '수정했습니다 ✏️'); else { setTimeout(() => cheer(F.type + ' 일지 저장 완료'), 400); } if (!editLogId) withPh(addItem('logs', data).then(r => r.id), F.type === '레슨' ? '레슨 일지 저장! 숙제 잊지 마세요 📌' : F.type === '웨이트' ? `웨이트 저장! 총 볼륨 ${fmtKg(data.volume)} 💪` : '일지를 저장했습니다 🏸');
   closeM('m-log');
 };
-window.delLog = () => { if (!editLogId || !confirm('이 일지를 삭제할까요? 되돌릴 수 없습니다.')) return; W(delItem('logs', editLogId), '삭제했습니다'); closeM('m-log'); };
+window.delLog = () => { if (!editLogId || !confirm('이 일지를 삭제할까요? 되돌릴 수 없습니다.')) return; const rec = S.logs.find(x => x.id === editLogId); W(delPhotosOf(rec).then(() => delItem('logs', editLogId)), '삭제했습니다'); closeM('m-log'); };
 
 /* ═════ 10. 루틴 ═════ */
 let rtDate = today(), rtChecked = new Set(), rtDirty = false, editRtId = null;
@@ -1470,7 +1551,7 @@ window.openDiary = (id = null) => {
   const d = id ? S.diaries.find(x => x.id === id) : null; editDiaryId = d?.id || null;
   $('df-title').textContent = d ? '일기 수정' : '운동일기 쓰기'; $('df-del').classList.toggle('hidden', !d);
   setV('df-date', d?.date || today()); setV('df-title-in', d?.title); setV('df-content', d?.content);
-  F.mood = d?.mood || '';
+  F.mood = d?.mood || ''; initPhotos('df', d);
   // 예전 일기(종목 없음)는 배드민턴으로 / 새 일기는 오늘 쓴 일지의 유형으로 미리 선택
   const todayTypes = S.logs.filter(l => l.date === (d?.date || today())).map(l => l.type === '웨이트' ? '웨이트' : l.type === '레슨' ? '레슨' : '배드민턴');
   F.dsp = new Set(d ? (d.sports || ['배드민턴']) : todayTypes);
@@ -1482,10 +1563,12 @@ window.openDiary = (id = null) => {
 window.saveDiary = () => {
   const data = { date: getV('df-date'), title: getV('df-title-in'), content: getV('df-content'), mood: F.mood || '', sports: ordered(DIARY_SPORTS, F.dsp) };
   if (!data.date) { toast('날짜를 입력해 주세요'); return; } if (!data.content) { toast('일기 내용을 써 주세요'); return; }
-  if (editDiaryId) W(updItem('diaries', editDiaryId, data), '수정했습니다'); else { W(addItem('diaries', data), '일기를 저장했습니다 ✍️'); setTimeout(() => cheer('운동일기 저장 완료'), 400); }
+  const phItems = F.ph.df.slice(), phCh = photoChanged('df'); if (phCh) toast('사진을 올리는 중입니다...');
+  const withPh = (p, msg) => W(p.then(id => phCh ? syncPhotos('diaries', id, phItems) : null), msg);
+  if (editDiaryId) withPh(updItem('diaries', editDiaryId, data).then(() => editDiaryId), '수정했습니다'); else { withPh(addItem('diaries', data).then(r => r.id), '일기를 저장했습니다 ✍️'); setTimeout(() => cheer('운동일기 저장 완료'), 400); }
   closeM('m-diary');
 };
-window.delDiary = () => { if (!editDiaryId || !confirm('이 일기를 삭제할까요?')) return; W(delItem('diaries', editDiaryId), '삭제했습니다'); closeM('m-diary'); };
+window.delDiary = () => { if (!editDiaryId || !confirm('이 일기를 삭제할까요?')) return; const rec = S.diaries.find(x => x.id === editDiaryId); W(delPhotosOf(rec).then(() => delItem('diaries', editDiaryId)), '삭제했습니다'); closeM('m-diary'); };
 let diaryFilter = '전체';
 window.setDiaryFilter = t => { diaryFilter = t; renderDiaries(); };
 const dSports = d => d.sports && d.sports.length ? d.sports : ['배드민턴'];
@@ -1497,7 +1580,7 @@ function renderDiaries() {
   $('diary-list').innerHTML = list.length ? list.map(d => `<div class="card tap" onclick="openDiary('${d.id}')">
     <div class="row"><span style="font-size:30px">${esc(d.mood || '✍️')}</span><div class="grow"><div class="t-b">${esc(d.title || '(제목 없음)')}</div><div class="t-s">${fmtD(d.date)} · ${esc((d.date||'').slice(0,4))}</div></div></div>
     <div style="margin-top:6px">${dSports(d).map(x => `<span class="tag${x === '웨이트' ? ' o' : ''}">${esc(x)}</span>`).join('')}</div>
-    <div class="t-m pre" style="margin-top:8px;max-height:84px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 60%,transparent)">${esc(d.content)}</div></div>`).join('')
+    <div class="t-m pre" style="margin-top:8px;max-height:84px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 60%,transparent)">${esc(d.content)}</div>${photoStrip('diaries', d)}</div>`).join('')
     : emptyBox('첫 운동일기를 써 보세요 ✍️<br>배드민턴·웨이트 무엇이든 좋아요.');
 }
 
