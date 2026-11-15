@@ -299,6 +299,11 @@ details.sec.weight>summary{background:#FFF1E8;color:#C2410C}
 #ph-view .pv-l{left:10px;top:50%}#ph-view .pv-r{right:10px;top:50%}
 #ph-view .pv-n{position:absolute;bottom:calc(20px + env(safe-area-inset-bottom));color:#fff;font-weight:800}
 
+.sugg{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.sugg:empty{display:none}
+.sg{padding:6px 11px;border-radius:16px;border:1.5px solid var(--line);background:#F7F9FC;font-size:12.5px;font-weight:700;color:var(--ink2)}
+.sg.on{background:var(--navy);border-color:var(--navy);color:#fff}
+
 /* FAB */
 #fab{position:fixed;right:max(16px,calc(50% - 304px));bottom:calc(92px + env(safe-area-inset-bottom));z-index:120;height:56px;padding:0 20px 0 16px;border-radius:28px;border:none;background:var(--yellow);color:var(--navy);font-size:15px;font-weight:900;box-shadow:0 10px 24px rgba(242,157,18,.45);display:none;align-items:center;gap:6px}
 #fab i{font-style:normal;font-size:26px;line-height:1;margin-top:-2px}
@@ -559,7 +564,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
   <div class="md-h"><img data-kk alt=""><b id="lf-title">일지 쓰기</b><button class="md-x" onclick="closeM('m-log')">✕</button></div>
   <div class="lf-hero" id="lf-hero"><i id="lf-hero-ic">🏸</i><div><b id="lf-hero-t">훈련 일지</b><span id="lf-hero-s"></span></div></div>
   <div class="fg"><label class="t-s">유형 바꾸기</label><div class="seg sm" id="lf-type" style="grid-template-columns:repeat(5,1fr)"></div></div>
-  <div class="fr" id="lf-daterow"><div class="fg"><label>날짜 *</label><input type="date" id="lf-date" onchange="refreshLessonInfo();if(F.type==='웨이트')drawLifts()"></div><div class="fg"><label>장소</label><input id="lf-place" list="dl-place" placeholder="예: 위너클럽 체육관"></div></div>
+  <div class="fr" id="lf-daterow"><div class="fg"><label>날짜 *</label><input type="date" id="lf-date" onchange="refreshLessonInfo();if(F.type==='웨이트')drawLifts()"></div><div class="fg"><label>장소</label><input id="lf-place" placeholder="예: 위너클럽 체육관"><div class="sugg" id="sg-lf-place"></div></div></div>
   <div class="fr3">
     <div class="fg"><label>시작</label><input type="time" id="lf-start" onchange="calcDur()"></div>
     <div class="fg"><label>종료</label><input type="time" id="lf-end" onchange="calcDur()"></div>
@@ -571,7 +576,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
   <details class="sec lesson" id="lf-lesson"><summary>🎓 레슨 상세 <small id="lf-lno"></small></summary><div class="in">
     <div class="row" style="margin-bottom:12px"><span class="lesson-no" id="lf-lno2">1회차</span><div class="grow"></div><button type="button" class="btn btn-o btn-s" onclick="loadPrevLesson()">↺ 지난 레슨 불러오기</button></div>
     <div id="lf-prevhw"></div>
-    <div class="fr"><div class="fg"><label>코치</label><input id="lf-coach" list="dl-coach" placeholder="코치 이름" oninput="refreshLessonInfo()"></div>
+    <div class="fr"><div class="fg"><label>코치</label><input id="lf-coach" placeholder="코치 이름" oninput="refreshLessonInfo()"><div class="sugg" id="sg-lf-coach"></div></div>
       <div class="fg"><label>레슨 형태</label><select id="lf-kind"><option>개인</option><option>그룹</option><option>클리닉</option></select></div></div>
     <div class="lb">드릴 (훈련한 내용 하나씩)</div>
     <div id="lf-drills"></div>
@@ -616,7 +621,6 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
   </div></details>
   <div class="btns"><button class="btn btn-d hidden" id="lf-del" onclick="delLog()">삭제</button><button class="btn btn-o" onclick="closeM('m-log')">취소</button><button class="btn btn-p" onclick="saveLog()">저장</button></div>
 </div></div>
-<datalist id="dl-place"></datalist><datalist id="dl-coach"></datalist>
 
 <!-- 루틴 -->
 <div class="mo" id="m-rt"><div class="md">
@@ -666,12 +670,11 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 <div class="mo" id="m-player"><div class="md">
   <div class="md-h"><img data-kk alt=""><b id="pf-title">선수 추가</b><button class="md-x" onclick="closeM('m-player')">✕</button></div>
   <div class="fr"><div class="fg"><label>이름 *</label><input id="pf-name"></div><div class="fg"><label>성별</label><select id="pf-gender"><option>남</option><option>여</option></select></div></div>
-  <div class="fr"><div class="fg"><label>급수</label><input id="pf-level" placeholder="A, B, C..."></div><div class="fg"><label>소속 클럽</label><input id="pf-club" list="dl-club"></div></div>
+  <div class="fr"><div class="fg"><label>급수</label><input id="pf-level" placeholder="A, B, C..."></div><div class="fg"><label>소속 클럽</label><input id="pf-club" placeholder="직접 입력"><div class="sugg" id="sg-pf-club"></div></div></div>
   <div class="fg"><label>특징</label><textarea id="pf-feature" style="min-height:56px" placeholder="예: 백핸드 강함, 전위 빠름"></textarea></div>
   <div class="fg"><label>메모</label><textarea id="pf-memo" style="min-height:56px"></textarea></div>
   <div class="btns"><button class="btn btn-d hidden" id="pf-del" onclick="delPlayer()">삭제</button><button class="btn btn-o" onclick="closeM('m-player')">취소</button><button class="btn btn-p" onclick="savePlayer()">저장</button></div>
 </div></div>
-<datalist id="dl-club"></datalist>
 
 <!-- 클럽매치 -->
 <div class="mo" id="m-club"><div class="md">
@@ -727,7 +730,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 <!-- 레슨비 -->
 <div class="mo" id="m-fee"><div class="md">
   <div class="md-h"><img data-kk alt=""><b id="ff-title">레슨비 기록</b><button class="md-x" onclick="closeM('m-fee')">✕</button></div>
-  <div class="fr"><div class="fg"><label>코치</label><input id="ff-coach" list="dl-coach"></div><div class="fg"><label>결제일</label><input type="date" id="ff-paid"></div></div>
+  <div class="fr"><div class="fg"><label>코치</label><input id="ff-coach" placeholder="코치 이름"><div class="sugg" id="sg-ff-coach"></div></div><div class="fg"><label>결제일</label><input type="date" id="ff-paid"></div></div>
   <div class="fr"><div class="fg"><label>레슨 시작일 *</label><input type="date" id="ff-start"></div><div class="fg"><label>레슨 종료일</label><input type="date" id="ff-end"></div></div>
   <div class="fr"><div class="fg"><label>금액(원) *</label><input type="number" id="ff-amount" inputmode="numeric" placeholder="200000"></div><div class="fg"><label>레슨 횟수</label><input type="number" id="ff-count" inputmode="numeric" placeholder="8"></div></div>
   <div class="t-s" style="margin:-4px 0 12px;line-height:1.6">💡 기간 안에 쓴 <b>레슨 일지</b> 수를 세어 "몇 회 수강했는지" 자동으로 보여 줍니다. (코치 이름이 같거나 비어 있는 레슨만 셉니다)</div>
@@ -888,7 +891,7 @@ try { const t = localStorage.getItem('sl_title'); if (t) { $('login-title').text
 /* 새 버전 자동 적용
    - 열 때, 앱으로 돌아올 때, 5분마다 최신 파일과 비교
    - 입력창이 열려 있지 않으면 바로 새 버전으로 이동, 쓰는 중이면 위쪽 노란 띠로 알림(쓰던 내용 보호) */
-const APP_VER = '20261115175524';
+const APP_VER = '20261115180341';
 function goNewVer(v) { location.replace(location.pathname + '?v=' + v); }
 async function checkVer() { try {
   const t = await (await fetch(location.pathname + '?ck=' + Date.now(), { cache: 'no-store' })).text();
@@ -1372,6 +1375,7 @@ window.openLog = (id = null, type = '훈련') => {
   setV('lf-good', l?.good); setV('lf-improve', l?.improve); setV('lf-next', l?.nextGoal); setV('lf-memo', l?.memo);
   if (!l && type === '레슨') { const prev = lessons()[0]; if (prev) { setV('lf-coach', prev.coach); setV('lf-kind', prev.lessonKind || '개인'); if (!getV('lf-place')) setV('lf-place', prev.place); } }
   drawSeg('lf-type', LOG_TYPES, F.type, v => { F.type = v; applyLogType(); });
+  setTimeout(() => { fillSugg('lf-place'); fillSugg('lf-coach'); }, 0);
   ['cond','focus','fatigue'].forEach(k => drawStars(k));
   drawChips('lf-parts', BODY_PARTS, F.parts);
   drawChips('lf-tags', SKILLS, F.tags); drawChips('lf-corr', CORRECTIONS, F.corr); drawChips('lf-pain', PAINS, F.pain);
@@ -1484,6 +1488,7 @@ window.loadPrevLesson = () => {
   const hasDrills = F.drills.some(d => d.skill || d.content);
   if (hasDrills && !confirm('지금 입력한 드릴을 지난 레슨 드릴로 바꿀까요?')) return;
   setV('lf-coach', prev.coach); setV('lf-kind', prev.lessonKind || '개인'); if (!getV('lf-place')) setV('lf-place', prev.place);
+  fillSugg('lf-place'); fillSugg('lf-coach');
   F.drills = (prev.drills || []).map(d => ({ skill: d.skill || '', content: d.content || '', sets: d.sets || '', minutes: d.minutes || '', score: 0 }));
   if (!F.drills.length) F.drills.push({ skill: '', content: '', sets: '', minutes: '', score: 0 });
   drawDrills(); refreshLessonInfo(); toast(`${fmtD(prev.date)} 레슨 드릴을 불러왔습니다 (성공도는 비움)`);
@@ -1615,12 +1620,19 @@ function fillSelects() {
   ['cf-a1','cf-b1','ca-1','cb-1'].forEach(id => set(id,'선수 1 선택')); ['cf-a2','cf-b2','ca-2','cb-2'].forEach(id => set(id,'선수 2 (선택)'));
   set('mu-1','상대 선택'); set('mu-2','없음(단식)');
 }
-function fillDatalists() {
-  const uniq = a => [...new Set(a.filter(Boolean))];
-  $('dl-place').innerHTML = uniq(S.logs.map(l => l.place)).slice(0, 30).map(v => `<option value="${esc(v)}">`).join('');
-  $('dl-coach').innerHTML = uniq([...S.logs.map(l => l.coach), ...fees().map(f => f.coach)]).map(v => `<option value="${esc(v)}">`).join('');
-  $('dl-club').innerHTML = uniq(S.players.map(p => p.club)).map(v => `<option value="${esc(v)}">`).join('');
-}
+// 예전에 쓴 값을 칸 아래 버튼으로 보여 줌 (휴대폰에서 잘 안 되던 자동완성 목록 대신). 칸에는 직접 써도 됨
+const uniqV = a => [...new Set(a.map(v => String(v || '').trim()).filter(Boolean))];
+const SUGG = {
+  'lf-place': () => uniqV(S.logs.map(l => l.place)),
+  'lf-coach': () => uniqV([...S.logs.map(l => l.coach), ...fees().map(f => f.coach)]),
+  'ff-coach': () => uniqV([...fees().map(f => f.coach), ...S.logs.map(l => l.coach)]),
+  'pf-club': () => uniqV(S.players.map(p => p.club)),
+};
+function fillSugg(id) { const el = $('sg-' + id); if (!el) return; const cur = getV(id); const vals = SUGG[id]().slice(0, 12);
+  el.innerHTML = vals.map(v => `<button type="button" class="sg${v === cur ? ' on' : ''}" data-for="${id}" data-v="${esc(v)}">${esc(v)}</button>`).join(''); }
+document.addEventListener('click', e => { const b = e.target.closest('.sg'); if (!b) return; const inp = $(b.dataset.for); inp.value = b.dataset.v; inp.dispatchEvent(new Event('input', { bubbles: true })); inp.dispatchEvent(new Event('change', { bubbles: true })); fillSugg(b.dataset.for); });
+document.addEventListener('input', e => { if (SUGG[e.target.id]) fillSugg(e.target.id); });
+function fillDatalists() {}
 function renderGames() {
   const pm = pMap(), g = S.games;
   const w = g.filter(x => x.result === '승').length;
@@ -1697,7 +1709,7 @@ window.toggleFav = id => { const p = S.players.find(x => x.id === id); if (p) W(
 window.openPlayer = (id = null) => {
   const p = id ? S.players.find(x => x.id === id) : null; editPlayerId = p?.id || null;
   $('pf-title').textContent = p ? '선수 수정' : '선수 추가'; $('pf-del').classList.toggle('hidden', !p);
-  setV('pf-name', p?.name); setV('pf-gender', p?.gender || '남'); setV('pf-level', p?.level); setV('pf-club', p?.club); setV('pf-feature', p?.feature); setV('pf-memo', p?.memo);
+  setV('pf-name', p?.name); setV('pf-gender', p?.gender || '남'); setV('pf-level', p?.level); setV('pf-club', p?.club); fillSugg('pf-club'); setV('pf-feature', p?.feature); setV('pf-memo', p?.memo);
   openM('m-player');
 };
 window.savePlayer = () => {
@@ -1978,7 +1990,7 @@ window.openFee = (id = null) => {
   $('ff-title').textContent = f ? '레슨비 수정' : '레슨비 기록'; $('ff-del').classList.toggle('hidden', !f);
   const last = fees().sort((a,b) => (b.startDate||'').localeCompare(a.startDate||''))[0];
   setV('ff-coach', f ? f.coach : (last?.coach || lessons()[0]?.coach || '')); setV('ff-paid', f?.paidDate || (f ? '' : today()));
-  setV('ff-start', f?.startDate || (f ? '' : today())); setV('ff-end', f?.endDate); setV('ff-amount', f ? f.amount : last?.amount); setV('ff-count', f ? f.count : last?.count); setV('ff-memo', f ? f.memo : '');
+  setV('ff-start', f?.startDate || (f ? '' : today())); setV('ff-end', f?.endDate); setV('ff-amount', f ? f.amount : last?.amount); setV('ff-count', f ? f.count : last?.count); setV('ff-memo', f ? f.memo : ''); fillSugg('ff-coach');
   openM('m-fee');
 };
 window.saveFee = () => {
