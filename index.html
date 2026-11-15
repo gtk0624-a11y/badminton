@@ -243,6 +243,7 @@ details.sec.weight>summary{background:#FFF1E8;color:#C2410C}
 .lift{background:#FFF8F3;border-radius:14px;padding:10px;margin-bottom:8px;border:1.5px solid #FBD9C2}
 .lift .lt{display:flex;gap:6px;align-items:center}
 .lift .no{width:26px;height:26px;border-radius:8px;background:#F06A1D;color:#fff;font-weight:900;font-size:13px;display:grid;place-items:center;flex-shrink:0}
+.lift select.lsel{flex:1;min-width:0;padding:9px 8px;border:1.5px solid #F06A1D;border-radius:10px;font-size:15px;font-weight:800;background:#fff;color:var(--ink)}
 .lift input{padding:9px 8px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#fff;width:100%;min-width:0}
 .lift .ln{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px}
 .lift .ln label{font-size:11px;font-weight:800;color:var(--ink3);display:block;margin-bottom:2px;text-align:center}
@@ -588,7 +589,6 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
     <button type="button" class="btn btn-o" style="width:100%;margin-bottom:12px" onclick="addLift()">+ 종목 추가</button>
     <div class="vol"><span>총 볼륨 (무게×반복×세트)</span><span id="lf-vol">0kg</span></div>
   </div></details>
-  <datalist id="dl-lift"></datalist>
 
   <details class="sec" id="lf-sec-skill" open><summary>🎯 집중 기술</summary><div class="in">
     <div style="text-align:right;margin:-4px 0 6px"><a class="ed" onclick="openLists('SKILLS')">✏️ 기술 목록 편집</a></div>
@@ -784,7 +784,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
   <div class="fg"><label>무엇으로 잴까요?</label><select id="gl-kind" onchange="goalForm()">
     <option value="count">기록 횟수 (자동)</option><option value="time">운동 시간 (자동)</option><option value="lift">웨이트 중량 (자동)</option><option value="volume">웨이트 볼륨 (자동)</option><option value="win">경기 승률 (자동)</option><option value="games">경기 수 (자동)</option><option value="manual">직접 입력</option></select></div>
   <div class="fg gk gk-count gk-time"><label>대상</label><select id="gl-type"><option value="">전체 일지</option></select></div>
-  <div class="fg gk gk-lift"><label>종목</label><input id="gl-lift" list="dl-lift2" placeholder="예: 스쿼트"><datalist id="dl-lift2"></datalist></div>
+  <div class="fg gk gk-lift"><label>종목</label><select id="gl-lift"></select></div>
   <div class="fg gk gk-count gk-time gk-volume gk-win gk-games gk-manual"><label>기간</label><select id="gl-period" onchange="goalForm()"><option value="week">이번 주</option><option value="month" selected>이번 달</option><option value="year">올해</option><option value="custom">기간 직접 지정</option><option value="all">전체 기간</option></select></div>
   <div class="fr gk-custom"><div class="fg"><label>시작일</label><input type="date" id="gl-start"></div><div class="fg"><label>종료일</label><input type="date" id="gl-end"></div></div>
   <div class="fr"><div class="fg"><label>목표값 * <small class="t-s" id="gl-unit"></small></label><input type="number" id="gl-target" inputmode="decimal" step="any"></div>
@@ -886,7 +886,7 @@ try { const t = localStorage.getItem('sl_title'); if (t) { $('login-title').text
   }
 })();
 /* 새 버전 자동 적용: 휴대폰이 예전 화면을 기억(캐시)하고 있으면 최신 파일과 비교해 한 번 새로고침 */
-const APP_VER = '20261115141454';
+const APP_VER = '20261115175305';
 (async () => { try {
   const t = await (await fetch(location.pathname + '?ck=' + Date.now(), { cache: 'no-store' })).text();
   const m = t.match(/const APP_VER = '([^']+)'/);
@@ -1191,7 +1191,7 @@ window.openGoal = (id = null) => {
   const g = id ? goalList().find(x => x.id === id) : null; editGoalId = g?.id || null;
   $('gl-title').textContent = g ? '목표 수정' : '목표 추가'; $('gl-del').classList.toggle('hidden', !g);
   $('gl-type').innerHTML = '<option value="">전체 일지</option>' + LOG_TYPES.map(t => `<option>${t}</option>`).join('');
-  $('dl-lift2').innerHTML = [...new Set([...weights().flatMap(w => (w.lifts||[]).map(x => x.name)), ...LIFTS])].filter(Boolean).map(v => `<option value="${esc(v)}">`).join('');
+  $('gl-lift').innerHTML = liftOptions(g?.lift || '').replace('<option value="__custom">✏️ 직접 입력하기</option>', '');
   setV('gl-name', g?.name); setV('gl-kind', g?.kind || 'count'); setV('gl-type', g?.type || ''); setV('gl-lift', g?.lift); setV('gl-period', g?.period || 'month');
   setV('gl-start', g?.start); setV('gl-end', g?.end); setV('gl-target', g?.target); setV('gl-cur', g?.current); setV('gl-munit', g?.unit);
   goalForm(); openM('m-goal');
@@ -1364,7 +1364,7 @@ window.openLog = (id = null, type = '훈련') => {
   if (!l && type === '레슨') { const prev = lessons()[0]; if (prev) { setV('lf-coach', prev.coach); setV('lf-kind', prev.lessonKind || '개인'); if (!getV('lf-place')) setV('lf-place', prev.place); } }
   drawSeg('lf-type', LOG_TYPES, F.type, v => { F.type = v; applyLogType(); });
   ['cond','focus','fatigue'].forEach(k => drawStars(k));
-  drawChips('lf-parts', BODY_PARTS, F.parts); $('dl-lift').innerHTML = [...new Set([...weights().flatMap(w => (w.lifts||[]).map(x => x.name)), ...LIFTS])].filter(Boolean).map(v => `<option value="${esc(v)}">`).join('');
+  drawChips('lf-parts', BODY_PARTS, F.parts);
   drawChips('lf-tags', SKILLS, F.tags); drawChips('lf-corr', CORRECTIONS, F.corr); drawChips('lf-pain', PAINS, F.pain);
   $('lf-sec-body').open = !!(F.cond || F.focus || F.fatigue || Number(l?.rpe) || l?.sleep || F.pain.size);
   $('lf-sec-rev').open = true;
@@ -1431,22 +1431,33 @@ $('lf-drills').addEventListener('click', e => {
   const del = e.target.closest('[data-del]'); if (del) { F.drills.splice(+del.dataset.del, 1); drawDrills(); return; }
   const sc = e.target.closest('[data-sc]'); if (sc) { const d = F.drills[+sc.dataset.i]; const v = +sc.dataset.sc; d.score = Number(d.score) === v ? 0 : v; drawDrills(); }
 });
+// 종목 고르기: 휴대폰에서 잘 안 되던 '자동완성 목록' 대신 진짜 드롭다운(최근 종목 → 전체 목록 → 직접 입력)
+function liftOptions(cur) {
+  const recent = [...new Set(weights().flatMap(w => (w.lifts||[]).map(x => x.name)).filter(Boolean))].slice(0, 12);
+  const rest = LIFTS.filter(v => !recent.includes(v));
+  const known = [...recent, ...rest];
+  const o = v => `<option value="${esc(v)}"${v === cur ? ' selected' : ''}>${esc(v)}</option>`;
+  return `<option value="">종목 선택 ▾</option>${cur && !known.includes(cur) ? o(cur) : ''}${recent.length ? `<optgroup label="최근 한 종목">${recent.map(o).join('')}</optgroup>` : ''}<optgroup label="전체 종목">${rest.map(o).join('')}</optgroup><option value="__custom">✏️ 직접 입력하기</option>`;
+}
 function drawLifts() {
   const date = getV('lf-date') || today();
   $('lf-lifts').innerHTML = F.lifts.map((x,i) => { const p = x.name ? lastLift(x.name, date, editLogId) : null;
-    return `<div class="lift"><div class="lt"><span class="no">${i+1}</span><input list="dl-lift" data-li="${i}" data-lk="name" value="${esc(x.name)}" placeholder="종목 (예: 스쿼트)" style="text-align:left;font-weight:700"><button type="button" class="ib" data-ldup="${i}" title="같은 종목 한 줄 더">⧉</button><button type="button" class="ib" data-ldel="${i}">✕</button></div>
+    return `<div class="lift"><div class="lt"><span class="no">${i+1}</span>${x.custom ? `<input data-li="${i}" data-lk="name" value="${esc(x.name)}" placeholder="종목 이름 입력" style="text-align:left;font-weight:700"><button type="button" class="ib" data-lsel="${i}" title="목록에서 고르기">☰</button>` : `<select class="lsel" data-li="${i}" data-lk="namesel">${liftOptions(x.name)}</select>`}<button type="button" class="ib" data-ldup="${i}" title="같은 종목 한 줄 더">⧉</button><button type="button" class="ib" data-ldel="${i}">✕</button></div>
     <div class="ln"><div><label>무게(kg)</label><input type="number" inputmode="decimal" step="0.5" data-li="${i}" data-lk="kg" value="${esc(x.kg)}"></div><div><label>반복(회)</label><input type="number" inputmode="numeric" data-li="${i}" data-lk="reps" value="${esc(x.reps)}"></div><div><label>세트</label><input type="number" inputmode="numeric" data-li="${i}" data-lk="sets" value="${esc(x.sets)}"></div></div>
     ${p ? `<div class="lp">지난번 ${fmtD(p.date)} · ${p.xs.map(liftTxt).join(', ')}</div>` : ''}</div>`; }).join('');
   updVol();
 }
 function updVol() { const v = F.lifts.reduce((a,x) => a + liftVol(x), 0); $('lf-vol').textContent = fmtKg(v); $('lf-wv').textContent = v ? fmtKg(v) : ''; }
-$('lf-lifts').addEventListener('input', e => { const t = e.target; if (t.dataset.lk) { F.lifts[+t.dataset.li][t.dataset.lk] = t.value; updVol(); } });
-$('lf-lifts').addEventListener('change', e => { if (e.target.dataset.lk === 'name') drawLifts(); });
+$('lf-lifts').addEventListener('input', e => { const t = e.target; if (t.dataset.lk && t.dataset.lk !== 'namesel') { F.lifts[+t.dataset.li][t.dataset.lk] = t.value; updVol(); } });
+$('lf-lifts').addEventListener('change', e => { const t = e.target, x = F.lifts[+t.dataset.li];
+  if (t.dataset.lk === 'namesel') { if (t.value === '__custom') { x.custom = true; x.name = ''; drawLifts(); $('lf-lifts').querySelector(`input[data-li="${t.dataset.li}"][data-lk="name"]`)?.focus(); } else { x.name = t.value; x.custom = false; delete x.namesel; drawLifts(); } return; }
+  if (t.dataset.lk === 'name') drawLifts(); });
 $('lf-lifts').addEventListener('click', e => {
   const d = e.target.closest('[data-ldel]'); if (d) { F.lifts.splice(+d.dataset.ldel, 1); drawLifts(); return; }
+  const ls = e.target.closest('[data-lsel]'); if (ls) { F.lifts[+ls.dataset.lsel].custom = false; drawLifts(); return; }
   const c = e.target.closest('[data-ldup]'); if (c) { const i = +c.dataset.ldup; F.lifts.splice(i + 1, 0, { ...F.lifts[i] }); drawLifts(); }
 });
-window.addLift = () => { F.lifts.push({ name: '', kg: '', reps: '', sets: '' }); drawLifts(); const ins = $('lf-lifts').querySelectorAll('input[data-lk=name]'); ins[ins.length - 1]?.focus(); };
+window.addLift = () => { F.lifts.push({ name: '', kg: '', reps: '', sets: '' }); drawLifts(); };
 window.loadPrevWeight = () => {
   const parts = [...F.parts], date = getV('lf-date') || today();
   const cand = weights().filter(w => w.id !== editLogId && (w.date||'') <= date && (w.lifts||[]).length);
