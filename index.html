@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#14284B">
-<title>ShuttleLog · 꿈송이와 함께하는 배드민턴 기록</title>
+<title>운동로그 · 배드민턴 & 웨이트 기록</title>
 <link rel="icon" id="fav">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
 <style>
@@ -233,6 +233,30 @@ details.acc .card{box-shadow:none;border:1px solid var(--line)}
 .pt:first-of-type{border-top:none}
 .pt i{font-style:normal;flex-shrink:0;width:22px;height:22px;border-radius:7px;background:var(--navy);color:var(--yellow);font-size:12px;font-weight:900;display:grid;place-items:center;margin-top:1px}
 
+/* 웨이트 */
+.b-웨이트{background:#FFE8D9;color:#C2410C}.stripe.웨이트{border-left-color:#F06A1D}.d-웨이트{background:#F06A1D}
+.seg button.on[data-v="웨이트"]{background:#F06A1D}
+.qb.t5{background:#F06A1D;color:#fff}
+details.sec.weight{border-color:#FBC9A8}
+details.sec.weight>summary{background:#FFF1E8;color:#C2410C}
+.lift{background:#FFF8F3;border-radius:14px;padding:10px;margin-bottom:8px;border:1.5px solid #FBD9C2}
+.lift .lt{display:flex;gap:6px;align-items:center}
+.lift .no{width:26px;height:26px;border-radius:8px;background:#F06A1D;color:#fff;font-weight:900;font-size:13px;display:grid;place-items:center;flex-shrink:0}
+.lift input{padding:9px 8px;border:1.5px solid var(--line);border-radius:10px;font-size:15px;background:#fff;width:100%;min-width:0}
+.lift .ln{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-top:6px}
+.lift .ln label{font-size:11px;font-weight:800;color:var(--ink3);display:block;margin-bottom:2px;text-align:center}
+.lift .ln input{text-align:center;font-weight:800}
+.lift .lp{font-size:12px;color:#C2410C;font-weight:700;margin-top:6px}
+.vol{background:#F06A1D;color:#fff;border-radius:12px;padding:10px 12px;font-weight:800;display:flex;justify-content:space-between;margin-bottom:12px}
+.tag.o{background:#FFE8D9;color:#C2410C}
+
+.ed{font-size:11.5px;font-weight:800;color:var(--sky);cursor:pointer;margin-left:4px}
+.goal{padding:10px 0;border-top:1px dashed var(--line);cursor:pointer}
+.goal:first-of-type{border-top:none}
+.goal .gp{font-size:20px;font-weight:900;letter-spacing:-.5px}
+.gbar{height:12px;background:#EEF1F6;border-radius:6px;overflow:hidden;margin-top:6px}
+.gbar div{height:100%;border-radius:6px}
+
 /* FAB */
 #fab{position:fixed;right:max(16px,calc(50% - 304px));bottom:calc(92px + env(safe-area-inset-bottom));z-index:120;height:56px;padding:0 20px 0 16px;border-radius:28px;border:none;background:var(--yellow);color:var(--navy);font-size:15px;font-weight:900;box-shadow:0 10px 24px rgba(242,157,18,.45);display:none;align-items:center;gap:6px}
 #fab i{font-style:normal;font-size:26px;line-height:1;margin-top:-2px}
@@ -317,8 +341,8 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 <div id="login">
   <div class="login-card">
     <img class="login-kk" data-kk alt="꿈송이">
-    <div class="login-title" id="login-title">Shuttle<b>Log</b></div>
-    <div class="login-sub">꿈송이와 함께 쓰는 배드민턴 기록장<br>레슨 · 훈련 · 경기 · 장비를 한곳에</div>
+    <div class="login-title" id="login-title">운동<b>로그</b></div>
+    <div class="login-sub">꿈송이와 함께 쓰는 나만의 운동 기록장<br>배드민턴 · 레슨 · 웨이트 · 가계부를 한곳에</div>
     <div id="inapp-box" class="inapp hidden"></div>
     <button class="g-btn" onclick="signIn()"><img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">Google로 시작하기</button>
     <div class="copy">© 김정환 · M.A.D.T (Moral And Digital Teacher)</div>
@@ -335,20 +359,22 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 <!-- 홈 -->
 <section id="page-home" class="page active">
   <div class="hero">
-    <div class="hero-title" onclick="openSettings()"><span id="h-title">🏸 ShuttleLog</span><small id="h-sub"></small><button class="pen" type="button">✏️ 제목</button></div>
-    <div class="hero-top"><div class="hero-date" id="h-date"></div><button class="logout" onclick="signOutNow()">로그아웃</button></div>
+    <div class="hero-title" onclick="openSettings()"><span id="h-title">💪 운동로그</span><small id="h-sub"></small><button class="pen" type="button">✏️ 제목</button><span style="flex:1"></span><button class="logout" onclick="event.stopPropagation();signOutNow()">로그아웃</button></div>
+    <div class="hero-top"><div class="hero-date" id="h-date"></div></div>
     <div class="hero-hi" id="h-hi">오늘도 한 게임?</div>
     <img class="hero-kk" data-kk alt="꿈송이" onclick="nextBubble()">
     <div class="bubble" id="h-bubble" onclick="nextBubble()">...</div>
     <div class="hero-stats" id="h-stats"></div>
   </div>
-  <div id="h-points"></div>
-  <div class="quick">
-    <button class="qb t1" onclick="openLog(null,'훈련')"><i>🏸</i>훈련 일지</button>
-    <button class="qb t2" onclick="openLog(null,'레슨')"><i>🎓</i>레슨 일지</button>
-    <button class="qb t3" onclick="openGame()"><i>🏆</i>경기 기록</button>
-    <button class="qb t4" onclick="openDiary()"><i>✍️</i>민턴일기</button>
+  <div class="quick" style="grid-template-columns:repeat(5,1fr);gap:6px">
+    <button class="qb t1" onclick="openLog(null,'훈련')"><i>🏸</i>훈련</button>
+    <button class="qb t2" onclick="openLog(null,'레슨')"><i>🎓</i>레슨</button>
+    <button class="qb t5" onclick="openLog(null,'웨이트')"><i>🏋️</i>웨이트</button>
+    <button class="qb t3" onclick="openGame()"><i>🏆</i>경기</button>
+    <button class="qb t4" onclick="openDiary()"><i>✍️</i>일기</button>
   </div>
+  <div id="h-goals"></div>
+  <div id="h-points"></div>
   <div id="h-hw"></div>
   <div class="sec-t">다가오는 일정 <a onclick="go('cal')">달력 ›</a></div>
   <div id="h-up"></div>
@@ -435,7 +461,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
   <div class="card">
     <div class="cal-h"><button class="cal-nav" onclick="moveMonth(-1)">‹</button><b id="cal-title"></b><button class="cal-nav" onclick="moveMonth(1)">›</button></div>
     <div class="cal" id="cal-grid"></div>
-    <div class="legend"><span><i class="cd d-훈련"></i>훈련</span><span><i class="cd d-레슨"></i>레슨</span><span><i class="cd d-자체게임"></i>자체게임</span><span><i class="cd d-대회"></i>대회</span><span><i class="cd d-ev"></i>일정</span><span><i class="cd d-w"></i>승</span><span><i class="cd d-l"></i>패</span><span><i class="cd d-rt"></i>루틴</span></div>
+    <div class="legend"><span><i class="cd d-훈련"></i>훈련</span><span><i class="cd d-레슨"></i>레슨</span><span><i class="cd d-자체게임"></i>자체게임</span><span><i class="cd d-웨이트"></i>웨이트</span><span><i class="cd d-대회"></i>대회</span><span><i class="cd d-ev"></i>일정</span><span><i class="cd d-w"></i>승</span><span><i class="cd d-l"></i>패</span><span><i class="cd d-rt"></i>루틴</span></div>
   </div>
   <div class="sec-t">이번 달 일정 <small id="cal-n"></small></div>
   <div id="ev-list"></div>
@@ -449,11 +475,11 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 
 <!-- 장비 -->
 <section id="page-gear" class="page">
-  <div class="ph"><img data-kk alt=""><div><h1><span>장비</span></h1><div class="ph-sub">장비 · 민턴 가계부 · 메모</div></div></div>
+  <div class="ph"><img data-kk alt=""><div><h1><span>장비</span></h1><div class="ph-sub">장비 · 운동 가계부 · 메모</div></div></div>
   <div class="gear-banner" id="gear-banner"></div>
   <div class="subtabs">
     <button class="subtab" data-s="equip" onclick="go('gear','equip')">장비</button>
-    <button class="subtab" data-s="book" onclick="go('gear','book')">민턴 가계부</button>
+    <button class="subtab" data-s="book" onclick="go('gear','book')">운동 가계부</button>
     <button class="subtab" data-s="memo" onclick="go('gear','memo')">메모</button>
   </div>
   <div class="subpane" data-s="equip"><div id="equip-list"></div></div>
@@ -489,8 +515,8 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 <!-- ══ 모달: 훈련·레슨 일지 ══ -->
 <div class="mo" id="m-log"><div class="md">
   <div class="md-h"><img data-kk alt=""><b id="lf-title">일지 쓰기</b><button class="md-x" onclick="closeM('m-log')">✕</button></div>
-  <div class="fg"><label>유형</label><div class="seg" id="lf-type"></div></div>
-  <div class="fr"><div class="fg"><label>날짜 *</label><input type="date" id="lf-date" onchange="refreshLessonInfo()"></div><div class="fg"><label>장소</label><input id="lf-place" list="dl-place" placeholder="예: 위너클럽 체육관"></div></div>
+  <div class="fg"><label>유형</label><div class="seg" id="lf-type" style="grid-template-columns:repeat(5,1fr)"></div></div>
+  <div class="fr"><div class="fg"><label>날짜 *</label><input type="date" id="lf-date" onchange="refreshLessonInfo();if(F.type==='웨이트')drawLifts()"></div><div class="fg"><label>장소</label><input id="lf-place" list="dl-place" placeholder="예: 위너클럽 체육관"></div></div>
   <div class="fr3">
     <div class="fg"><label>시작</label><input type="time" id="lf-start" onchange="calcDur()"></div>
     <div class="fg"><label>종료</label><input type="time" id="lf-end" onchange="calcDur()"></div>
@@ -507,13 +533,23 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
     <div class="lb">드릴 (훈련한 내용 하나씩)</div>
     <div id="lf-drills"></div>
     <button type="button" class="btn btn-o" style="width:100%;margin-bottom:14px" onclick="addDrill()">+ 드릴 추가</button>
-    <div class="fg"><label>코치 교정 포인트</label><div class="chips amb" data-key="corr" id="lf-corr"></div></div>
+    <div class="fg"><label>코치 교정 포인트 <a class="ed" onclick="openLists('CORRECTIONS')">✏️ 목록</a></label><div class="chips amb" data-key="corr" id="lf-corr"></div></div>
     <div class="fg"><label>코치 피드백 (들은 말 그대로)</label><textarea id="lf-fb" placeholder="예: 점프 전에 오른발이 늦게 빠진다. 타점을 머리 앞에서."></textarea></div>
     <div class="fg"><label>다음 레슨까지 숙제</label><textarea id="lf-hw" style="min-height:56px" placeholder="예: 섀도 풋워크 100회, 거울 보고 스윙 30회"></textarea></div>
     <div class="fg"><label>참고 링크 (레슨 영상 등)</label><input type="url" id="lf-link" placeholder="https://"></div>
   </div></details>
 
+  <details class="sec weight" id="lf-weight"><summary>🏋️ 웨이트 기록 <small id="lf-wv"></small></summary><div class="in">
+    <div class="row" style="margin-bottom:10px;flex-wrap:wrap;gap:6px"><button type="button" class="btn btn-n btn-s" onclick="loadPrevWeight()">↺ 지난 웨이트 불러오기</button><span class="t-s">고른 부위의 가장 최근 운동을 그대로 채웁니다</span></div>
+    <div class="fg"><label>운동 부위 <a class="ed" onclick="openLists('BODY_PARTS')">✏️ 목록</a></label><div class="chips" data-key="parts" id="lf-parts"></div></div>
+    <div id="lf-lifts"></div>
+    <button type="button" class="btn btn-o" style="width:100%;margin-bottom:12px" onclick="addLift()">+ 종목 추가</button>
+    <div class="vol"><span>총 볼륨 (무게×반복×세트)</span><span id="lf-vol">0kg</span></div>
+  </div></details>
+  <datalist id="dl-lift"></datalist>
+
   <details class="sec" id="lf-sec-skill" open><summary>🎯 집중 기술</summary><div class="in">
+    <div style="text-align:right;margin:-4px 0 6px"><a class="ed" onclick="openLists('SKILLS')">✏️ 기술 목록 편집</a></div>
     <div class="fg"><div class="chips" data-key="tags" id="lf-tags"></div></div>
     <div class="fg"><label>기타 기술 (직접 입력)</label><input id="lf-extra" placeholder="예: 대각 푸시 후 전위 커버"></div>
   </div></details>
@@ -522,7 +558,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
     <div class="fr"><div class="fg"><label>컨디션</label><div class="stars" id="stars-cond"></div></div><div class="fg"><label>집중도</label><div class="stars" id="stars-focus"></div></div></div>
     <div class="fg"><label>운동 강도 <b id="lf-rpe-v" style="color:var(--navy3)">-</b> <small class="t-s">(1 아주 가볍게 ~ 10 한계까지)</small></label><input type="range" class="rpe" id="lf-rpe" min="0" max="10" value="0" oninput="$('lf-rpe-v').textContent=this.value>0?this.value+' / 10':'-'"></div>
     <div class="fr"><div class="fg"><label>피로도</label><div class="stars" id="stars-fatigue"></div></div><div class="fg"><label>전날 수면(시간)</label><input type="number" id="lf-sleep" step="0.5" min="0" max="14" inputmode="decimal" placeholder="7"></div></div>
-    <div class="fg"><label>불편한 부위</label><div class="chips warn" data-key="pain" id="lf-pain"></div></div>
+    <div class="fg"><label>불편한 부위 <a class="ed" onclick="openLists('PAINS')">✏️ 목록</a></label><div class="chips warn" data-key="pain" id="lf-pain"></div></div>
     <div class="fg"><label>부위 메모</label><input id="lf-painmemo" placeholder="예: 스매시 후 오른쪽 어깨 뻐근"></div>
   </div></details>
 
@@ -539,7 +575,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 <!-- 루틴 -->
 <div class="mo" id="m-rt"><div class="md">
   <div class="md-h"><img data-kk alt=""><b id="rtf-title">루틴 추가</b><button class="md-x" onclick="closeM('m-rt')">✕</button></div>
-  <div class="fg"><label>카테고리</label><select id="rtf-cat"><option>준비운동</option><option>메인훈련</option><option>일상연습</option><option>마무리</option></select></div>
+  <div class="fg"><label>카테고리</label><select id="rtf-cat"></select><a class="ed" style="display:inline-block;margin-top:4px" onclick="openLists('RT_CATS')">✏️ 카테고리 편집</a></div>
   <div class="fg"><label>항목 이름 *</label><input id="rtf-name"></div>
   <div class="fr"><div class="fg"><label>시간</label><input id="rtf-dur" placeholder="15분"></div><div class="fg"><label>횟수</label><input id="rtf-reps" placeholder="50회"></div></div>
   <div class="btns"><button class="btn btn-d hidden" id="rtf-del" onclick="delRoutine()">삭제</button><button class="btn btn-o" onclick="closeM('m-rt')">취소</button><button class="btn btn-p" onclick="saveRoutine()">저장</button></div>
@@ -651,7 +687,7 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
 <!-- 가계부 지출 -->
 <div class="mo" id="m-exp"><div class="md">
   <div class="md-h"><img data-kk alt=""><b id="xf-title">지출 기록</b><button class="md-x" onclick="closeM('m-exp')">✕</button></div>
-  <div class="fg"><label>분류</label><div class="seg" id="xf-cat" style="grid-template-columns:repeat(3,1fr)"></div></div>
+  <div class="fg"><label>분류 <a class="ed" onclick="openLists('EXP_CATS')">✏️ 목록</a></label><div class="seg" id="xf-cat" style="grid-template-columns:repeat(3,1fr)"></div></div>
   <div class="t-s" style="margin:-4px 0 12px">💡 레슨비는 <b>레슨비</b> 버튼, 라켓·신발 같은 장비는 <b>장비 구입</b> 버튼으로 기록하면 수강 횟수·사용 기간까지 관리됩니다.</div>
   <div class="fr"><div class="fg"><label>날짜 *</label><input type="date" id="xf-date"></div><div class="fg"><label>금액(원) *</label><input type="number" id="xf-amount" inputmode="numeric" placeholder="0"></div></div>
   <div class="fg"><label>내용</label><input id="xf-detail" placeholder="예: BG80 26파운드 / 에어로센사 1타"></div>
@@ -677,6 +713,31 @@ details.sec.lesson>summary{background:var(--sky2);color:#1B5FC1}
     <textarea id="sf-points" style="min-height:170px" placeholder="오른발 먼저 빼고 점프&#10;타점은 머리 앞에서&#10;스매시 후 바로 리커버리&#10;서브는 짧게, 리시브는 낮게"></textarea></div>
   <div class="fg"><label><input type="checkbox" id="sf-bubble" style="width:auto;margin-right:6px;vertical-align:middle">꿈송이 말풍선에도 핵심 포인트 보여 주기</label></div>
   <div class="btns"><button class="btn btn-o" onclick="closeM('m-set')">취소</button><button class="btn btn-p" onclick="saveSettings()">저장</button></div>
+</div></div>
+
+<!-- 목록 편집 -->
+<div class="mo" id="m-lists"><div class="md">
+  <div class="md-h"><img data-kk alt=""><b>선택 목록 편집</b><button class="md-x" onclick="closeM('m-lists')">✕</button></div>
+  <div class="t-s" style="margin-bottom:12px">지운 항목도 예전 기록에는 그대로 남아 있습니다.</div>
+  <div id="ls-body"></div>
+  <div class="btns"><button class="btn btn-o" onclick="closeM('m-lists')">취소</button><button class="btn btn-p" onclick="saveLists()">저장</button></div>
+</div></div>
+
+<!-- 목표 -->
+<div class="mo" id="m-goal"><div class="md">
+  <div class="md-h"><img data-kk alt=""><b id="gl-title">목표 추가</b><button class="md-x" onclick="closeM('m-goal')">✕</button></div>
+  <div class="fg"><label>목표 이름 *</label><input id="gl-name" placeholder="예: 11월 웨이트 20회"></div>
+  <div class="fg"><label>무엇으로 잴까요?</label><select id="gl-kind" onchange="goalForm()">
+    <option value="count">기록 횟수 (자동)</option><option value="time">운동 시간 (자동)</option><option value="lift">웨이트 중량 (자동)</option><option value="volume">웨이트 볼륨 (자동)</option><option value="win">경기 승률 (자동)</option><option value="games">경기 수 (자동)</option><option value="manual">직접 입력</option></select></div>
+  <div class="fg gk gk-count gk-time"><label>대상</label><select id="gl-type"><option value="">전체 일지</option></select></div>
+  <div class="fg gk gk-lift"><label>종목</label><input id="gl-lift" list="dl-lift2" placeholder="예: 스쿼트"><datalist id="dl-lift2"></datalist></div>
+  <div class="fg gk gk-count gk-time gk-volume gk-win gk-games gk-manual"><label>기간</label><select id="gl-period" onchange="goalForm()"><option value="week">이번 주</option><option value="month" selected>이번 달</option><option value="year">올해</option><option value="custom">기간 직접 지정</option><option value="all">전체 기간</option></select></div>
+  <div class="fr gk-custom"><div class="fg"><label>시작일</label><input type="date" id="gl-start"></div><div class="fg"><label>종료일</label><input type="date" id="gl-end"></div></div>
+  <div class="fr"><div class="fg"><label>목표값 * <small class="t-s" id="gl-unit"></small></label><input type="number" id="gl-target" inputmode="decimal" step="any"></div>
+    <div class="fg gk gk-manual"><label>현재값</label><input type="number" id="gl-cur" inputmode="decimal" step="any"></div>
+    <div class="fg gk gk-manual"><label>단위</label><input id="gl-munit" placeholder="예: km, 회"></div></div>
+  <div class="t-s" id="gl-preview" style="margin:-2px 0 10px;font-weight:700"></div>
+  <div class="btns"><button class="btn btn-d hidden" id="gl-del" onclick="delGoal()">삭제</button><button class="btn btn-o" onclick="closeM('m-goal')">취소</button><button class="btn btn-p" onclick="saveGoal()">저장</button></div>
 </div></div>
 
 <!-- 날짜 상세 -->
@@ -706,16 +767,20 @@ const provider = new GoogleAuthProvider();
 provider.setCustomParameters({ prompt: 'select_account' });
 
 /* ═════ 2. 고정 목록 (자주 고칠 곳) ═════ */
-const LOG_TYPES = ['훈련','레슨','대회','자체게임'];
-const SKILLS = ['하이클리어','드롭','스매시','점프스매시','드라이브','푸시','헤어핀','언더클리어','서비스','리시브','수비','네트킬','풋워크','로테이션','백핸드','포핸드'];
-const CORRECTIONS = ['발 타이밍','스윙 타이밍','타점','그립','체중 이동','준비 자세','복귀(리커버리)','스텝 순서','몸통 회전','손목 사용','팔꿈치 위치','시선'];
-const PAINS = ['어깨','팔꿈치','손목','허리','무릎','발목','종아리','허벅지','아킬레스','발바닥'];
+const LOG_TYPES = ['훈련','레슨','웨이트','대회','자체게임'];
+let BODY_PARTS = ['가슴','등','하체','어깨','팔','코어','전신','유산소'];
+let LIFTS = ['스쿼트','벤치프레스','데드리프트','오버헤드프레스','바벨로우','풀업','랫풀다운','레그프레스','런지','루마니안 데드리프트','인클라인 벤치','덤벨프레스','덤벨로우','사이드 레터럴 레이즈','바이셉 컬','트라이셉 익스텐션','카프레이즈','플랭크','힙쓰러스트','레그컬','레그익스텐션','케이블 플라이','딥스','푸시업','줄넘기','러닝머신'];
+let SKILLS = ['하이클리어','드롭','스매시','점프스매시','드라이브','푸시','헤어핀','언더클리어','서비스','리시브','수비','네트킬','풋워크','로테이션','백핸드','포핸드'];
+let CORRECTIONS = ['발 타이밍','스윙 타이밍','타점','그립','체중 이동','준비 자세','복귀(리커버리)','스텝 순서','몸통 회전','손목 사용','팔꿈치 위치','시선'];
+let PAINS = ['어깨','팔꿈치','손목','허리','무릎','발목','종아리','허벅지','아킬레스','발바닥'];
 const MOODS = ['😊','🔥','😤','😴','🤕','🏆','🥲','😎'];
-const RT_CATS = ['준비운동','메인훈련','일상연습','마무리'];
+let RT_CATS = ['준비운동','메인훈련','일상연습','마무리'];
 const EQUIP_CATS = ['라켓','신발','거트','셔틀콕','의류','가방','기타'];
 const FEE_CAT = '레슨비'; // 레슨비는 'equipment' 저장소 안에 이 종류로 저장 (보안 규칙 변경 불필요)
-const EXP_CATS = ['거트비','셔틀콕','대회참가비','클럽회비','용품·소모품','기타']; // 가계부 지출 분류 (ledger:true 로 'equipment' 저장소에 저장)
+const DEF = {};
+let EXP_CATS = ['거트비','셔틀콕','대회참가비','클럽회비','용품·소모품','기타']; // 가계부 지출 분류 (ledger:true 로 'equipment' 저장소에 저장)
 const BOOK_COLORS = { 레슨비:'var(--sky)', 장비:'var(--court)', 거트비:'var(--amber)', 셔틀콕:'var(--violet)', 대회참가비:'var(--coral)', 클럽회비:'var(--navy3)', '용품·소모품':'#13A3B5', 기타:'var(--ink3)' };
+['BODY_PARTS','LIFTS','SKILLS','CORRECTIONS','PAINS','RT_CATS','EXP_CATS'].forEach(k => DEF[k] = eval(k).slice());
 const MY_CLUB = '위너';    // 상대방 '클럽별' 정렬에서 우리 클럽으로 묶을 이름
 const COLS = ['logs','routines','events','memos','equipment','players','games','clubmatches','routineLogs','diaries','tourneys'];
 
@@ -754,7 +819,7 @@ function clean(o) { const r = {}; Object.keys(o).forEach(k => { if (o[k] !== und
 /* ═════ 4. 로그인 ═════ */
 let user = null;
 const UA = navigator.userAgent || '';
-try { const t = localStorage.getItem('sl_title'); if (t) { $('login-title').textContent = t; document.title = t + ' · 배드민턴 기록'; } } catch (e) {}
+try { const t = localStorage.getItem('sl_title'); if (t) { $('login-title').textContent = t; document.title = t; } } catch (e) {}
 (function inappGuide(){
   const box = $('inapp-box');
   if (/KAKAOTALK/i.test(UA)) {
@@ -881,7 +946,7 @@ document.addEventListener('click', e => {
   const ch = e.target.closest('.chip');
   if (ch && ch.parentElement.dataset.key) { const key = ch.parentElement.dataset.key; const v = ch.dataset.v; if (F[key].has(v)) F[key].delete(v); else F[key].add(v); ch.classList.toggle('on'); }
 });
-function drawChips(id, list, set) { $(id).innerHTML = list.map(v => `<button type="button" class="chip${set.has(v) ? ' on' : ''}" data-v="${esc(v)}">${esc(v)}</button>`).join(''); }
+function drawChips(id, list, set) { list = [...list, ...[...set].filter(v => !list.includes(v))]; $(id).innerHTML = list.map(v => `<button type="button" class="chip${set.has(v) ? ' on' : ''}" data-v="${esc(v)}">${esc(v)}</button>`).join(''); }
 function drawSeg(id, list, val, onPick, anyCls) {
   const el = $(id);
   el.innerHTML = list.map(v => `<button type="button" data-v="${esc(v)}" class="${v === val ? 'on' : ''} ${anyCls ? 'any' : ''}">${esc(v)}</button>`).join('');
@@ -894,29 +959,117 @@ const getV = id => $(id).value.trim();
 let rq = false;
 function scheduleRender() { if (rq) return; rq = true; requestAnimationFrame(() => { rq = false; renderAll(); }); }
 function renderAll() {
+  applyLists();
   const safe = f => { try { f(); } catch (e) { console.error(f.name, e); } };
   [renderHome, renderLogs, renderRoutines, renderRoutineHist, renderDiaries, renderGames, renderPlayers, renderClub, renderTourneys, renderCalendar, renderGear, fillSelects, fillDatalists].forEach(safe);
   if (curPage === 'stats') safe(renderStats);
   if (curPage === 'match' && sub.match === 'winrate') safe(renderWinrate);
 }
 const lessons = () => S.logs.filter(l => l.type === '레슨');
+const weights = () => S.logs.filter(l => l.type === '웨이트');
+const liftVol = x => (Number(x.kg)||0) * (Number(x.reps)||0) * (Number(x.sets)||0);
+const logVol = l => (l.lifts||[]).reduce((a,x) => a + liftVol(x), 0);
+const e1rm = (kg, reps) => { kg = Number(kg)||0; reps = Number(reps)||0; if (!kg || !reps) return 0; return reps === 1 ? kg : kg * (1 + reps / 30); };
+const fmtKg = n => (Math.round(n * 10) / 10).toLocaleString('ko-KR') + 'kg';
+const liftTxt = x => `${x.kg ? x.kg + 'kg' : '맨몸'}×${x.reps || '-'}${Number(x.sets) > 1 ? '×' + x.sets : ''}`;
+function lastLift(name, beforeDate, exceptId) { // 같은 종목의 가장 최근 기록
+  for (const l of weights()) { if (l.id === exceptId || (beforeDate && (l.date||'') > beforeDate)) continue; const xs = (l.lifts||[]).filter(x => x.name === name); if (xs.length) return { date: l.date, xs }; }
+  return null;
+}
+function weightStreak() { const days = new Set(weights().map(l => l.date)); let n = 0; const d = new Date(); if (!days.has(ymd(d))) d.setDate(d.getDate() - 1); while (days.has(ymd(d))) { n++; d.setDate(d.getDate() - 1); } return n; }
 const fees = () => S.equipment.filter(e => e.category === FEE_CAT);
 const gears = () => S.equipment.filter(e => e.category !== FEE_CAT && !e.ledger);
 // 제목·핵심 포인트는 'memos' 저장소 안에 settings:true 문서 하나로 저장 (보안 규칙 변경 불필요)
 const settingsDoc = () => S.memos.find(m => m.settings);
-const memoList = () => S.memos.filter(m => !m.settings);
-function SET() { const d = settingsDoc() || {}; return { title: d.appTitle || '🏸 ShuttleLog', sub: d.appSub || '', points: Array.isArray(d.points) ? d.points : [], bubble: d.pointsInBubble !== false }; }
+const memoList = () => S.memos.filter(m => !m.settings && !m.goal);
+const goalList = () => S.memos.filter(m => m.goal);
+const LIST_INFO = { SKILLS: '배드민턴 기술', CORRECTIONS: '코치 교정 포인트', PAINS: '불편한 부위', BODY_PARTS: '웨이트 운동 부위', LIFTS: '웨이트 종목', RT_CATS: '루틴 카테고리', EXP_CATS: '가계부 지출 분류' };
+function applyLists() { const L = (settingsDoc() || {}).lists || {};
+  BODY_PARTS = L.BODY_PARTS || DEF.BODY_PARTS; LIFTS = L.LIFTS || DEF.LIFTS; SKILLS = L.SKILLS || DEF.SKILLS; CORRECTIONS = L.CORRECTIONS || DEF.CORRECTIONS; PAINS = L.PAINS || DEF.PAINS; RT_CATS = L.RT_CATS || DEF.RT_CATS; EXP_CATS = L.EXP_CATS || DEF.EXP_CATS; }
+const ordered = (list, set) => [...list.filter(v => set.has(v)), ...[...set].filter(v => !list.includes(v))];
+window.openLists = (focus) => {
+  applyLists();
+  $('ls-body').innerHTML = Object.entries(LIST_INFO).map(([k,t]) => `<div class="fg"><label>${t} <small class="t-s">(한 줄에 하나 · 순서대로 보임)</small></label><textarea id="ls-${k}" style="min-height:${k === 'LIFTS' ? 160 : 110}px">${esc(eval(k).join('\n'))}</textarea><button type="button" class="btn btn-o btn-s" style="margin-top:4px" onclick="$('ls-${k}').value=DEF.${k}.join('\\n')">기본값으로</button></div>`).join('');
+  openM('m-lists'); if (focus) setTimeout(() => $('ls-' + focus)?.scrollIntoView({ block: 'center' }), 60);
+};
+window.saveLists = () => {
+  const lists = {}; Object.keys(LIST_INFO).forEach(k => { const v = [...new Set($('ls-' + k).value.split('\n').map(x => x.trim()).filter(Boolean))]; lists[k] = v.length ? v : DEF[k]; });
+  const d = settingsDoc(); W(d ? updItem('memos', d.id, { lists }) : addItem('memos', { settings: true, category: '설정', title: '', content: '', lists }), '목록을 저장했습니다');
+  closeM('m-lists');
+};
+window.$ = $; window.DEF = DEF;
+
+/* ── 목표 · 도달률 ── */
+const GOAL_UNIT = { count: '회', time: '시간', lift: 'kg', volume: 'kg', win: '%', games: '경기' };
+function goalRange(g) { const t = new Date(), y = t.getFullYear();
+  if (g.period === 'week') { const a = weekStart(); const b = new Date(a); b.setDate(b.getDate() + 6); return [ymd(a), ymd(b), '이번 주']; }
+  if (g.period === 'month') { const k = today().slice(0,7); return [k + '-01', k + '-31', `${t.getMonth() + 1}월`]; }
+  if (g.period === 'year') return [y + '-01-01', y + '-12-31', `${y}년`];
+  if (g.period === 'custom') return [g.start || '0000', g.end || '9999', `${g.start ? fmtD(g.start) : ''}~${g.end ? fmtD(g.end) : ''}`];
+  return ['0000', '9999', '전체'];
+}
+function goalCur(g) {
+  const [a, b] = goalRange(g), inR = x => (x.date||'') >= a && (x.date||'') <= b;
+  const logs = S.logs.filter(inR).filter(l => !g.type || l.type === g.type);
+  if (g.kind === 'count') return logs.length;
+  if (g.kind === 'time') return Math.round(logs.reduce((x,l) => x + (Number(l.duration)||0), 0) / 6) / 10;
+  if (g.kind === 'lift') { let m = 0; weights().forEach(l => (l.lifts||[]).forEach(x => { if (x.name === g.lift) m = Math.max(m, Number(x.kg)||0); })); return m; }
+  if (g.kind === 'volume') return S.logs.filter(inR).filter(l => l.type === '웨이트').reduce((x,l) => x + logVol(l), 0);
+  const gs = S.games.filter(inR);
+  if (g.kind === 'win') return gs.length ? Math.round(gs.filter(x => x.result === '승').length / gs.length * 100) : 0;
+  if (g.kind === 'games') return gs.length;
+  return Number(g.current) || 0;
+}
+function goalInfo(g) { const cur = goalCur(g), tgt = Number(g.target) || 0, pct = tgt ? Math.round(cur / tgt * 100) : 0; const unit = g.kind === 'manual' ? (g.unit || '') : GOAL_UNIT[g.kind];
+  return { cur, tgt, pct, unit, label: goalRange(g)[2] }; }
+const goalColor = p => p >= 100 ? 'var(--court)' : p >= 70 ? '#2F80ED' : p >= 40 ? 'var(--amber)' : 'var(--coral)';
+function goalRow(g) { const i = goalInfo(g); const n = v => (Math.round(v * 10) / 10).toLocaleString('ko-KR');
+  return `<div class="goal" onclick="openGoal('${g.id}')"><div class="row"><div class="grow"><b>${esc(g.name)}</b><div class="t-s">${esc(i.label)}${g.kind === 'lift' ? ' · ' + esc(g.lift) : ''} · ${n(i.cur)} / ${n(i.tgt)}${esc(i.unit)}</div></div><span class="gp" style="color:${goalColor(i.pct)}">${i.pct}%${i.pct >= 100 ? ' 🎉' : ''}</span></div>
+    <div class="gbar"><div style="width:${Math.min(100, i.pct)}%;background:${goalColor(i.pct)}"></div></div></div>`; }
+let showAllGoals = false;
+window.toggleGoals = () => { showAllGoals = !showAllGoals; renderHome(); };
+function goalsCard() {
+  const gl = goalList().map(g => ({ g, p: goalInfo(g).pct })).sort((a,b) => (a.p >= 100) - (b.p >= 100) || a.p - b.p);
+  if (!gl.length) return `<div class="pts" style="border-color:#BBD5FB;border-style:dashed;cursor:pointer" onclick="openGoal()"><div class="pts-h" style="margin:0">🎯 목표 도달률<button style="background:var(--sky2);color:#1B5FC1">+ 목표</button></div><div class="t-s" style="margin-top:6px">예: 이번 달 웨이트 20회, 스쿼트 100kg, 이번 주 운동 8시간 → 기록하면 %가 자동으로 올라갑니다.</div></div>`;
+  const avgP = Math.round(avg(gl.map(x => Math.min(100, x.p))));
+  const shown = showAllGoals ? gl : gl.slice(0, 4);
+  return `<div class="pts" style="border-color:#BBD5FB"><div class="pts-h">🎯 목표 도달률 <span style="color:${goalColor(avgP)}">평균 ${avgP}%</span><button style="background:var(--sky2);color:#1B5FC1" onclick="openGoal()">+ 목표</button></div>
+    ${shown.map(x => goalRow(x.g)).join('')}${gl.length > 4 ? `<button class="btn btn-o" style="width:100%;margin-top:8px" onclick="toggleGoals()">${showAllGoals ? '접기 ▴' : `전체 보기 (${gl.length}개) ▾`}</button>` : ''}</div>`;
+}
+let editGoalId = null;
+window.goalForm = () => { const k = $('gl-kind').value; document.querySelectorAll('#m-goal .gk').forEach(el => el.classList.toggle('hidden', !el.classList.contains('gk-' + k)));
+  document.querySelector('#m-goal .gk-custom').classList.toggle('hidden', $('gl-period').value !== 'custom' || k === 'lift');
+  $('gl-unit').textContent = k === 'manual' ? '' : '(' + GOAL_UNIT[k] + ')'; previewGoal(); };
+function readGoal() { return { goal: true, category: '목표', title: '', content: '', name: getV('gl-name'), kind: $('gl-kind').value, type: $('gl-type').value, lift: getV('gl-lift'), period: $('gl-period').value, start: getV('gl-start'), end: getV('gl-end'), target: getV('gl-target'), current: getV('gl-cur'), unit: getV('gl-munit') }; }
+function previewGoal() { const g = readGoal(); if (!Number(g.target)) { $('gl-preview').textContent = ''; return; } const i = goalInfo(g); $('gl-preview').innerHTML = `지금 기준: ${Math.round(i.cur * 10) / 10}${esc(i.unit)} → <span style="color:${goalColor(i.pct)}">${i.pct}% 도달</span>`; }
+['gl-target','gl-cur','gl-lift','gl-type','gl-start','gl-end'].forEach(id => { $(id).addEventListener('input', previewGoal); $(id).addEventListener('change', previewGoal); });
+window.openGoal = (id = null) => {
+  const g = id ? goalList().find(x => x.id === id) : null; editGoalId = g?.id || null;
+  $('gl-title').textContent = g ? '목표 수정' : '목표 추가'; $('gl-del').classList.toggle('hidden', !g);
+  $('gl-type').innerHTML = '<option value="">전체 일지</option>' + LOG_TYPES.map(t => `<option>${t}</option>`).join('');
+  $('dl-lift2').innerHTML = [...new Set([...weights().flatMap(w => (w.lifts||[]).map(x => x.name)), ...LIFTS])].filter(Boolean).map(v => `<option value="${esc(v)}">`).join('');
+  setV('gl-name', g?.name); setV('gl-kind', g?.kind || 'count'); setV('gl-type', g?.type || ''); setV('gl-lift', g?.lift); setV('gl-period', g?.period || 'month');
+  setV('gl-start', g?.start); setV('gl-end', g?.end); setV('gl-target', g?.target); setV('gl-cur', g?.current); setV('gl-munit', g?.unit);
+  goalForm(); openM('m-goal');
+};
+window.saveGoal = () => { const d = readGoal();
+  if (!d.name || !Number(d.target)) { toast('목표 이름과 목표값을 입력해 주세요'); return; }
+  if (d.kind === 'lift' && !d.lift) { toast('종목을 입력해 주세요'); return; }
+  if (editGoalId) W(updItem('memos', editGoalId, d), '목표를 수정했습니다'); else W(addItem('memos', d), '목표를 세웠습니다 🎯');
+  closeM('m-goal'); };
+window.delGoal = () => { if (!editGoalId || !confirm('이 목표를 삭제할까요?')) return; W(delItem('memos', editGoalId), '삭제했습니다'); closeM('m-goal'); };
+function SET() { const d = settingsDoc() || {}; return { title: d.appTitle || '💪 운동로그', sub: d.appSub || '', points: Array.isArray(d.points) ? d.points : [], bubble: d.pointsInBubble !== false }; }
 function applyTitle() {
   const t = SET();
   $('h-title').textContent = t.title; $('h-sub').textContent = t.sub;
-  document.title = t.title + ' · 배드민턴 기록';
+  document.title = t.title;
   try { localStorage.setItem('sl_title', t.title); } catch (e) {}
 }
 window.openSettings = () => {
   const t = SET(); setV('sf-title', t.title); setV('sf-sub', t.sub); setV('sf-points', t.points.join('\n')); $('sf-bubble').checked = t.bubble; openM('m-set');
 };
 window.saveSettings = () => {
-  const data = { settings: true, category: '설정', title: '', content: '', appTitle: getV('sf-title') || '🏸 ShuttleLog', appSub: getV('sf-sub'),
+  const data = { settings: true, category: '설정', title: '', content: '', appTitle: getV('sf-title') || '💪 운동로그', appSub: getV('sf-sub'),
     points: $('sf-points').value.split('\n').map(x => x.trim()).filter(Boolean).slice(0, 20), pointsInBubble: $('sf-bubble').checked };
   const d = settingsDoc();
   W(d ? updItem('memos', d.id, data) : addItem('memos', data), '저장했습니다 📌');
@@ -953,6 +1106,7 @@ function renderHome() {
 
   const lastHw = lessons().find(l => l.homework);
   bubbles = [];
+  const wst = weightStreak(); if (wst >= 2) bubbles.push(`웨이트 ${wst}일 연속 기록 중! 오늘도 이어가요 🏋️`); else if (weights().length && !weights().some(l => l.date === today())) bubbles.push('오늘 웨이트 기록은 아직이에요. "지난 웨이트 불러오기"로 10초면 끝!');
   bubbles.push(week.length ? `이번 주 벌써 ${week.length}번 코트에 섰어요! 꿈송이도 신나요 🏸` : '이번 주는 아직 기록이 없어요. 셔틀콕이 기다려요!');
   if (lastHw && dayDiff(lastHw.date) >= -14) bubbles.push(`숙제 잊지 않았죠? "${String(lastHw.homework).split('\n')[0].slice(0,40)}"`);
   const corrCount = {}; lessons().slice(0, 10).forEach(l => (l.corrections||[]).forEach(c => corrCount[c] = (corrCount[c]||0) + 1));
@@ -963,6 +1117,7 @@ function renderHome() {
   if (recentG.length >= 5) bubbles.push(`최근 ${recentG.length}경기 ${w}승 ${recentG.length - w}패! ${w >= recentG.length/2 ? '좋은 흐름이에요 🔥' : '다음 경기는 이길 차례!'}`);
   bi = Math.min(bi, bubbles.length - 1); $('h-bubble').textContent = bubbles[bi];
 
+  $('h-goals').innerHTML = goalsCard();
   // 핵심 포인트
   const st = SET(); applyTitle();
   $('h-points').innerHTML = st.points.length ? `<div class="pts"><div class="pts-h">📌 나의 핵심 포인트<button onclick="openSettings()">✏️ 편집</button></div>${st.points.map((p,i) => `<div class="pt"><i>${i+1}</i><span>${esc(p)}</span></div>`).join('')}</div>`
@@ -999,8 +1154,9 @@ function logCard(l) {
   return `<div class="card tap stripe ${esc(l.type)}" onclick="openLog('${l.id}')">
     <div class="row"><span class="badge b-${esc(l.type)}">${esc(l.type||'훈련')}</span><span class="t-b grow" style="font-size:14.5px">${fmtD(l.date)}${l.place ? ' · ' + esc(l.place) : ''}</span>${l.pain?.length ? `<span class="tag r" style="margin:0">⚠ ${esc(l.pain.join('·'))}</span>` : ''}</div>
     ${l.type === '레슨' ? `<div class="t-m" style="margin-top:6px;font-weight:700">🎓 ${l.coach ? esc(l.coach) + ' 코치 · ' : ''}${lessonNo(l)}회차${l.lessonKind ? ' · ' + esc(l.lessonKind) : ''}</div>` : ''}
+    ${(l.lifts||[]).length ? `<div style="margin-top:6px">${(l.parts||[]).map(p => `<span class="tag o">${esc(p)}</span>`).join('')}</div><div style="margin-top:4px">${l.lifts.map(x => `<span class="tag">${esc(x.name || '종목')} ${esc(liftTxt(x))}</span>`).join('')}</div><div class="t-s t-b" style="margin-top:6px;color:#C2410C">🏋️ 총 볼륨 ${fmtKg(logVol(l))}</div>` : ''}
     ${drills.length ? `<div style="margin-top:6px">${drills.map(d => `<span class="tag">${esc(d.skill||'드릴')}${num(d.score) ? ' ' + '●'.repeat(d.score) + '○'.repeat(5 - d.score) : ''}</span>`).join('')}</div>` : ''}
-    ${tags.length ? `<div style="margin-top:4px">${tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}${l.focusExtra ? `<span class="tag">${esc(l.focusExtra)}</span>` : ''}</div>` : (l.focus ? `<div class="t-m" style="margin-top:6px">🎯 ${esc(l.focus)}</div>` : '')}
+    ${tags.length ? `<div style="margin-top:4px">${tags.map(t => `<span class="tag">${esc(t)}</span>`).join('')}${l.focusExtra ? `<span class="tag">${esc(l.focusExtra)}</span>` : ''}</div>` : (l.focus && l.type !== '웨이트' ? `<div class="t-m" style="margin-top:6px">🎯 ${esc(l.focus)}</div>` : '')}
     ${(l.corrections||[]).length ? `<div>${l.corrections.map(c => `<span class="tag y">${esc(c)}</span>`).join('')}</div>` : ''}
     ${l.coachFeedback ? `<div class="line">💬 ${esc(l.coachFeedback)}</div>` : ''}
     ${l.good ? `<div class="line good">✓ ${esc(l.good)}</div>` : ''}
@@ -1016,7 +1172,7 @@ function renderLogs() {
   $('log-filters').innerHTML = ['전체', ...LOG_TYPES].map(t => `<button class="fbtn${logFilter === t ? ' active' : ''}" onclick="setLogFilter('${t}')">${t} ${t === '전체' ? S.logs.length : S.logs.filter(l => l.type === t).length}</button>`).join('');
   const q = getV('log-q').toLowerCase();
   let list = logFilter === '전체' ? S.logs : S.logs.filter(l => l.type === logFilter);
-  if (q) list = list.filter(l => [l.place,l.partner,l.focus,l.focusExtra,(l.focusTags||[]).join(' '),l.coach,l.coachFeedback,l.homework,l.good,l.improve,l.memo,l.nextGoal,(l.corrections||[]).join(' '),(l.drills||[]).map(d => (d.skill||'') + ' ' + (d.content||'')).join(' ')].join(' ').toLowerCase().includes(q));
+  if (q) list = list.filter(l => [l.place,l.partner,l.focus,l.focusExtra,(l.focusTags||[]).join(' '),l.coach,l.coachFeedback,l.homework,l.good,l.improve,l.memo,l.nextGoal,(l.corrections||[]).join(' '),(l.drills||[]).map(d => (d.skill||'') + ' ' + (d.content||'')).join(' '),(l.lifts||[]).map(x => x.name).join(' '),(l.parts||[]).join(' ')].join(' ').toLowerCase().includes(q));
   if (!list.length) { $('log-list').innerHTML = emptyBox(q ? '검색 결과가 없습니다' : '아직 기록이 없습니다.<br>오른쪽 아래 <b>+ 일지 쓰기</b>를 눌러 보세요.'); return; }
   const by = {}; list.forEach(l => { const m = (l.date||'기타').slice(0,7); (by[m] = by[m] || []).push(l); });
   const months = Object.keys(by).sort().reverse();
@@ -1038,6 +1194,7 @@ window.openLog = (id = null, type = '훈련') => {
   F.corr = new Set(l?.corrections || []); F.pain = new Set(l?.pain || []);
   F.hwCheck = l?.hwCheck || '';
   F.drills = (l?.drills || []).map(d => ({ ...d }));
+  F.lifts = (l?.lifts || []).map(x => ({ ...x })); F.parts = new Set(l?.parts || []);
   // 예전 기록: 집중기술 글자 → 태그로 변환
   let tags = l?.focusTags, extra = l?.focusExtra || '';
   if (l && !tags) {
@@ -1056,10 +1213,11 @@ window.openLog = (id = null, type = '훈련') => {
   if (!l && type === '레슨') { const prev = lessons()[0]; if (prev) { setV('lf-coach', prev.coach); setV('lf-kind', prev.lessonKind || '개인'); if (!getV('lf-place')) setV('lf-place', prev.place); } }
   drawSeg('lf-type', LOG_TYPES, F.type, v => { F.type = v; applyLogType(); });
   ['cond','focus','fatigue'].forEach(k => drawStars(k));
+  drawChips('lf-parts', BODY_PARTS, F.parts); $('dl-lift').innerHTML = [...new Set([...weights().flatMap(w => (w.lifts||[]).map(x => x.name)), ...LIFTS])].filter(Boolean).map(v => `<option value="${esc(v)}">`).join('');
   drawChips('lf-tags', SKILLS, F.tags); drawChips('lf-corr', CORRECTIONS, F.corr); drawChips('lf-pain', PAINS, F.pain);
   $('lf-sec-body').open = !!(F.cond || F.focus || F.fatigue || Number(l?.rpe) || l?.sleep || F.pain.size);
   $('lf-sec-rev').open = true;
-  drawDrills(); applyLogType();
+  drawDrills(); drawLifts(); applyLogType();
   openM('m-log'); $('m-log').querySelector('.md').scrollTop = 0;
 };
 function applyLogType() {
@@ -1067,6 +1225,9 @@ function applyLogType() {
   $('lf-lesson').classList.toggle('hidden', !isL);
   if (isL) { $('lf-lesson').open = true; if (!F.drills.length) { F.drills.push({ skill: '', content: '', sets: '', minutes: '', score: 0 }); drawDrills(); } }
   $('lf-game-hint').classList.toggle('hidden', !(F.type === '대회' || F.type === '자체게임'));
+  const isW = F.type === '웨이트';
+  $('lf-weight').classList.toggle('hidden', !isW); $('lf-sec-skill').classList.toggle('hidden', isW);
+  if (isW) { $('lf-weight').open = true; if (!F.lifts.length) { F.lifts.push({ name: '', kg: '', reps: '', sets: '' }); drawLifts(); } if (!getV('lf-place')) { const pw = weights()[0]; if (pw?.place) setV('lf-place', pw.place); } }
   refreshLessonInfo();
 }
 window.refreshLessonInfo = () => {
@@ -1100,6 +1261,32 @@ $('lf-drills').addEventListener('click', e => {
   const del = e.target.closest('[data-del]'); if (del) { F.drills.splice(+del.dataset.del, 1); drawDrills(); return; }
   const sc = e.target.closest('[data-sc]'); if (sc) { const d = F.drills[+sc.dataset.i]; const v = +sc.dataset.sc; d.score = Number(d.score) === v ? 0 : v; drawDrills(); }
 });
+function drawLifts() {
+  const date = getV('lf-date') || today();
+  $('lf-lifts').innerHTML = F.lifts.map((x,i) => { const p = x.name ? lastLift(x.name, date, editLogId) : null;
+    return `<div class="lift"><div class="lt"><span class="no">${i+1}</span><input list="dl-lift" data-li="${i}" data-lk="name" value="${esc(x.name)}" placeholder="종목 (예: 스쿼트)" style="text-align:left;font-weight:700"><button type="button" class="ib" data-ldup="${i}" title="같은 종목 한 줄 더">⧉</button><button type="button" class="ib" data-ldel="${i}">✕</button></div>
+    <div class="ln"><div><label>무게(kg)</label><input type="number" inputmode="decimal" step="0.5" data-li="${i}" data-lk="kg" value="${esc(x.kg)}"></div><div><label>반복(회)</label><input type="number" inputmode="numeric" data-li="${i}" data-lk="reps" value="${esc(x.reps)}"></div><div><label>세트</label><input type="number" inputmode="numeric" data-li="${i}" data-lk="sets" value="${esc(x.sets)}"></div></div>
+    ${p ? `<div class="lp">지난번 ${fmtD(p.date)} · ${p.xs.map(liftTxt).join(', ')}</div>` : ''}</div>`; }).join('');
+  updVol();
+}
+function updVol() { const v = F.lifts.reduce((a,x) => a + liftVol(x), 0); $('lf-vol').textContent = fmtKg(v); $('lf-wv').textContent = v ? fmtKg(v) : ''; }
+$('lf-lifts').addEventListener('input', e => { const t = e.target; if (t.dataset.lk) { F.lifts[+t.dataset.li][t.dataset.lk] = t.value; updVol(); } });
+$('lf-lifts').addEventListener('change', e => { if (e.target.dataset.lk === 'name') drawLifts(); });
+$('lf-lifts').addEventListener('click', e => {
+  const d = e.target.closest('[data-ldel]'); if (d) { F.lifts.splice(+d.dataset.ldel, 1); drawLifts(); return; }
+  const c = e.target.closest('[data-ldup]'); if (c) { const i = +c.dataset.ldup; F.lifts.splice(i + 1, 0, { ...F.lifts[i] }); drawLifts(); }
+});
+window.addLift = () => { F.lifts.push({ name: '', kg: '', reps: '', sets: '' }); drawLifts(); const ins = $('lf-lifts').querySelectorAll('input[data-lk=name]'); ins[ins.length - 1]?.focus(); };
+window.loadPrevWeight = () => {
+  const parts = [...F.parts], date = getV('lf-date') || today();
+  const cand = weights().filter(w => w.id !== editLogId && (w.date||'') <= date && (w.lifts||[]).length);
+  const prev = parts.length ? (cand.find(w => parts.some(p => (w.parts||[]).includes(p))) || null) : cand[0];
+  if (!prev) { toast(parts.length ? `'${parts.join('·')}' 부위의 지난 기록이 없습니다` : '불러올 지난 웨이트 기록이 없습니다'); return; }
+  if (F.lifts.some(x => x.name || x.kg) && !confirm('지금 입력한 종목을 지난 기록으로 바꿀까요?')) return;
+  F.lifts = prev.lifts.map(x => ({ name: x.name || '', kg: x.kg || '', reps: x.reps || '', sets: x.sets || '' }));
+  F.parts = new Set(prev.parts || parts); drawChips('lf-parts', BODY_PARTS, F.parts);
+  drawLifts(); toast(`${fmtD(prev.date)} 기록을 불러왔습니다. 바뀐 숫자만 고치세요`);
+};
 window.addDrill = () => { F.drills.push({ skill: '', content: '', sets: '', minutes: '', score: 0 }); drawDrills(); };
 window.loadPrevLesson = () => {
   const prev = lessons().find(x => x.id !== editLogId && (x.date||'') <= (getV('lf-date') || today()));
@@ -1113,20 +1300,26 @@ window.loadPrevLesson = () => {
 };
 window.saveLog = () => {
   const date = getV('lf-date'); if (!date) { toast('날짜를 입력해 주세요'); return; }
-  const tags = SKILLS.filter(s => F.tags.has(s)); const extra = getV('lf-extra');
+  const tags = ordered(SKILLS, F.tags); const extra = getV('lf-extra');
   const data = {
     date, type: F.type, place: getV('lf-place'), startTime: getV('lf-start'), endTime: getV('lf-end'), duration: getV('lf-dur'),
     partner: getV('lf-partner'), focusTags: tags, focusExtra: extra, focus: [...tags, extra].filter(Boolean).join(', '),
     condition: F.cond || 0, focusRating: F.focus || 0, fatigue: F.fatigue || 0, rpe: Number($('lf-rpe').value) || 0, sleep: getV('lf-sleep'),
-    pain: PAINS.filter(p => F.pain.has(p)), painMemo: getV('lf-painmemo'),
+    pain: ordered(PAINS, F.pain), painMemo: getV('lf-painmemo'),
     good: getV('lf-good'), improve: getV('lf-improve'), nextGoal: getV('lf-next'), memo: getV('lf-memo'),
   };
+  if (F.type === '웨이트') {
+    data.lifts = F.lifts.filter(x => String(x.name||'').trim() || x.kg || x.reps).map(x => ({ name: String(x.name||'').trim(), kg: x.kg === '' ? '' : String(x.kg), reps: x.reps === '' ? '' : String(x.reps), sets: x.sets === '' ? '1' : String(x.sets) }));
+    data.parts = ordered(BODY_PARTS, F.parts); data.volume = data.lifts.reduce((a,x) => a + liftVol(x), 0);
+    data.focusTags = []; data.focus = data.lifts.map(x => x.name).filter(Boolean).join(', ');
+    if (!data.lifts.length && !confirm('입력한 종목이 없습니다. 그래도 저장할까요?')) return;
+  }
   if (F.type === '레슨') Object.assign(data, {
     coach: getV('lf-coach'), lessonKind: $('lf-kind').value,
     drills: F.drills.filter(d => d.skill || String(d.content||'').trim()).map(d => ({ skill: d.skill || '', content: String(d.content||'').trim(), sets: String(d.sets||'').trim(), minutes: d.minutes === '' ? '' : String(d.minutes), score: Number(d.score) || 0 })),
-    corrections: CORRECTIONS.filter(c => F.corr.has(c)), coachFeedback: getV('lf-fb'), homework: getV('lf-hw'), hwCheck: F.hwCheck || '', link: getV('lf-link'),
+    corrections: ordered(CORRECTIONS, F.corr), coachFeedback: getV('lf-fb'), homework: getV('lf-hw'), hwCheck: F.hwCheck || '', link: getV('lf-link'),
   });
-  if (editLogId) W(updItem('logs', editLogId, data), '수정했습니다 ✏️'); else W(addItem('logs', data), F.type === '레슨' ? '레슨 일지 저장! 숙제 잊지 마세요 📌' : '일지를 저장했습니다 🏸');
+  if (editLogId) W(updItem('logs', editLogId, data), '수정했습니다 ✏️'); else W(addItem('logs', data), F.type === '레슨' ? '레슨 일지 저장! 숙제 잊지 마세요 📌' : F.type === '웨이트' ? `웨이트 저장! 총 볼륨 ${fmtKg(data.volume)} 💪` : '일지를 저장했습니다 🏸');
   closeM('m-log');
 };
 window.delLog = () => { if (!editLogId || !confirm('이 일지를 삭제할까요? 되돌릴 수 없습니다.')) return; W(delItem('logs', editLogId), '삭제했습니다'); closeM('m-log'); };
@@ -1146,7 +1339,7 @@ function renderRoutines() {
   $('rt-ring').innerHTML = `<b>${rate}%</b>`;
   const saved = S.routineLogs.find(x => x.date === rtDate);
   $('rt-status').innerHTML = `${fmtD(rtDate)} · ${done}/${total} 완료 · ${saved ? (rtDirty ? '<b style="color:var(--coral)">변경됨, 저장 필요</b>' : '<b style="color:var(--court)">저장됨</b>') : (rtDirty ? '<b style="color:var(--coral)">저장 필요</b>' : '기록 없음')}`;
-  $('rt-list').innerHTML = RT_CATS.map(cat => {
+  $('rt-list').innerHTML = [...new Set([...RT_CATS, ...S.routines.map(r => r.category)])].map(cat => {
     const items = S.routines.filter(r => r.category === cat); if (!items.length) return '';
     return `<div class="rt-cat"><span>${cat}</span><span>${items.filter(r => rtChecked.has(r.id)).length}/${items.length}</span></div>` +
       items.map(r => `<div class="rt${rtChecked.has(r.id) ? ' on' : ''}" onclick="toggleRt('${r.id}')"><span class="ck">${rtChecked.has(r.id) ? '✓' : ''}</span><span class="rn">${esc(r.name)}</span><span class="rd">${esc(r.duration||'')}${r.duration && r.reps ? ' · ' : ''}${esc(r.reps||'')}</span><button class="ib" onclick="event.stopPropagation();openRoutine('${r.id}')">✎</button></div>`).join('');
@@ -1169,7 +1362,7 @@ window.saveRoutineLog = () => {
 window.openRoutine = (id = null) => {
   const r = id ? S.routines.find(x => x.id === id) : null; editRtId = r?.id || null;
   $('rtf-title').textContent = r ? '루틴 수정' : '루틴 추가'; $('rtf-del').classList.toggle('hidden', !r);
-  setV('rtf-cat', r?.category || '메인훈련'); setV('rtf-name', r?.name); setV('rtf-dur', r?.duration); setV('rtf-reps', r?.reps);
+  $('rtf-cat').innerHTML = [...new Set([...RT_CATS, r?.category].filter(Boolean))].map(c => `<option>${esc(c)}</option>`).join(''); setV('rtf-cat', r?.category || RT_CATS[1] || RT_CATS[0]); setV('rtf-name', r?.name); setV('rtf-dur', r?.duration); setV('rtf-reps', r?.reps);
   openM('m-rt');
 };
 window.saveRoutine = () => {
@@ -1527,7 +1720,7 @@ function renderGear() {
   const lastGut = exps().filter(x => x.expCat === '거트비' && x.date).sort((a,b) => b.date.localeCompare(a.date))[0];
   const active = fees().filter(f => !f.endDate || f.endDate >= today()).sort((a,b) => (b.startDate||'').localeCompare(a.startDate||''))[0];
   const left = active && Number(active.count) ? Math.max(0, Number(active.count) - feeUsage(active)) : null;
-  $('gear-banner').innerHTML = `<img src="${KK}" alt=""><div class="gb-t">${y}년 민턴 가계부</div><div class="gb-v">${won(yTot)}</div>
+  $('gear-banner').innerHTML = `<img src="${KK}" alt=""><div class="gb-t">${y}년 운동 가계부</div><div class="gb-v">${won(yTot)}</div>
     <div class="gb-row"><div>레슨비<b>${won(sumCat(yItems,'레슨비'))}</b></div><div>장비<b>${won(sumCat(yItems,'장비'))}</b></div><div>거트비<b>${won(sumCat(yItems,'거트비'))}</b></div>
     ${left != null ? `<div>남은 레슨<b>${left}회</b></div>` : ''}${lastGut ? `<div>거트 교체<b>${-dayDiff(lastGut.date)}일 전</b></div>` : ''}</div>`;
   // 장비
@@ -1635,7 +1828,8 @@ function renderStats() {
   if (!L.length && !S.games.length) { $('stats-body').innerHTML = emptyBox('기록이 쌓이면 여기에 그래프가 나타납니다'); return; }
   const totalMin = L.reduce((a,l) => a + (Number(l.duration)||0), 0);
   const cond = L.map(l => Number(l.condition)).filter(Boolean);
-  let h = `<div class="tiles"><div class="tile dark"><b>${L.length}</b><span>전체 일지</span></div><div class="tile"><b>${Math.round(totalMin / 60)}시간</b><span>누적 운동 시간</span></div>
+  let h = goalList().length ? goalsCard() : '';
+  h += `<div class="tiles"><div class="tile dark"><b>${L.length}</b><span>전체 일지</span></div><div class="tile"><b>${Math.round(totalMin / 60)}시간</b><span>누적 운동 시간</span></div>
     <div class="tile"><b>${L.filter(l => (l.date||'').startsWith(mk)).length}회</b><span>이번 달</span></div><div class="tile"><b>${cond.length ? avg(cond).toFixed(1) : '-'}</b><span>평균 컨디션 (5점)</span></div></div>`;
   // 주간 운동 시간
   const ws = weekStart(), wk = [];
@@ -1643,7 +1837,7 @@ function renderStats() {
     const ls = L.filter(l => (l.date||'') >= S1 && (l.date||'') <= E1); wk.push({ l: i === 0 ? '이번주' : i === 1 ? '지난주' : i + '주전', v: ls.reduce((a,l) => a + (Number(l.duration)||0), 0), n: ls.length, load: ls.reduce((a,l) => a + (Number(l.duration)||0) * (Number(l.rpe)||0), 0) }); }
   h += `<div class="card"><div class="t-b">주간 운동 시간 (분)</div><div class="t-s">막대 위 숫자 = 분 · 최근 8주</div>${bars(wk.map(w => ({ l: w.l, v: w.v, t: w.v ? w.v : '' })))}</div>`;
   // 유형별
-  h += `<div class="card"><div class="t-b">유형별 횟수</div>${bars(LOG_TYPES.map(t => ({ l: t, v: L.filter(l => l.type === t).length, c: { 훈련: 'var(--court)', 레슨: 'var(--sky)', 대회: 'var(--coral)', 자체게임: 'var(--violet)' }[t] })))}</div>`;
+  h += `<div class="card"><div class="t-b">유형별 횟수</div>${bars(LOG_TYPES.map(t => ({ l: t, v: L.filter(l => l.type === t).length, c: { 훈련: 'var(--court)', 레슨: 'var(--sky)', 웨이트: '#F06A1D', 대회: 'var(--coral)', 자체게임: 'var(--violet)' }[t] })))}</div>`;
   // 기술 분포
   const sk = {}; L.forEach(l => { const ts = l.focusTags?.length ? l.focusTags : SKILLS.filter(s => String(l.focus||'').includes(s)); ts.forEach(t => sk[t] = (sk[t]||0) + 1); (l.drills||[]).forEach(d => d.skill && (sk[d.skill] = (sk[d.skill]||0) + 1)); });
   const skl = Object.entries(sk).sort((a,b) => b[1] - a[1]).slice(0, 8);
@@ -1664,6 +1858,21 @@ function renderStats() {
     h += `<div class="card"><div class="t-b">⚠️ 자주 받은 교정 포인트</div><div class="t-s" style="margin-bottom:6px">괄호 = 최근 6번 레슨에서 받은 횟수. 줄어들면 고쳐지고 있는 것!</div>${ce.length ? hbars(ce.map(([l,v]) => ({ l, v, t: `${v}(${corrRecent[l]||0})` })), 'var(--amber)') : '<div class="t-s">레슨 일지에서 교정 포인트를 선택하면 나타납니다</div>'}</div>`;
     h += `<div class="card"><div class="t-b">📈 기술별 드릴 성공도</div><div class="t-s" style="margin-bottom:8px">예전 절반 평균 → 최근 절반 평균 (5점)</div>${growth.length ? growth.map(g => { const up = g.old != null ? g.rec - g.old : 0; return `<div class="hbar"><span class="hl">${esc(g.k)}</span><div class="ht"><div class="hf" style="width:${g.rec / 5 * 100}%;background:var(--sky)"></div></div><span class="hn" style="width:90px">${g.old != null ? g.old.toFixed(1) + '→' : ''}<b>${g.rec.toFixed(1)}</b> ${g.old != null ? (up > 0.2 ? '<span style="color:var(--court)">▲</span>' : up < -0.2 ? '<span style="color:var(--coral)">▼</span>' : '') : ''}</span></div>`; }).join('') : '<div class="t-s">드릴 성공도(1~5)를 눌러 두면 성장 추이가 나타납니다</div>'}</div>`;
   }
+  // 웨이트
+  const WS = weights();
+  if (WS.length) {
+    const wk2 = []; for (let i = 7; i >= 0; i--) { const s0 = new Date(ws); s0.setDate(s0.getDate() - i * 7); const e0 = new Date(s0); e0.setDate(e0.getDate() + 6);
+      const a = ymd(s0), b = ymd(e0), ls = WS.filter(l => (l.date||'') >= a && (l.date||'') <= b); wk2.push({ l: i === 0 ? '이번주' : i === 1 ? '지난주' : i + '주전', v: ls.reduce((x,l) => x + logVol(l), 0), n: ls.length }); }
+    const best = {}; [...WS].reverse().forEach(l => (l.lifts||[]).forEach(x => { if (!x.name) return; const r = e1rm(x.kg, x.reps); const b = best[x.name] = best[x.name] || { first: null, top: 0, topKg: 0, n: 0, last: null };
+      b.n++; if (r && b.first == null) b.first = r; if (r > b.top) b.top = r; if ((Number(x.kg)||0) > b.topKg) { b.topKg = Number(x.kg); b.topDate = l.date; } b.last = r || b.last; }));
+    const bl = Object.entries(best).sort((a,b) => b[1].n - a[1].n).slice(0, 10);
+    const parts = {}; WS.forEach(l => (l.parts||[]).forEach(p => parts[p] = (parts[p]||0) + 1));
+    h += `<div class="sec-t">🏋️ 웨이트</div><div class="tiles t3"><div class="tile dark"><b>${weightStreak()}일</b><span>연속 기록</span></div><div class="tile"><b>${WS.filter(l => (l.date||'').startsWith(mk)).length}회</b><span>이번 달</span></div><div class="tile"><b>${Math.round(wk2[7].v / 1000 * 10) / 10}t</b><span>이번 주 볼륨</span></div></div>
+      <div class="card"><div class="t-b">주간 총 볼륨</div><div class="t-s">무게×반복×세트 합계 (톤)</div>${bars(wk2.map(w => ({ l: w.l, v: w.v, t: w.v ? Math.round(w.v / 100) / 10 + 't' : '', c: '#F06A1D' })))}</div>
+      <div class="card"><div class="t-b">종목별 최고 기록</div><div class="t-s" style="margin-bottom:6px">추정 1RM = 무게×(1+반복÷30) · 처음 → 최고</div>
+      ${bl.length ? bl.map(([k,b]) => { const up = b.first ? Math.round((b.top - b.first) / b.first * 100) : 0; return `<div class="row" style="padding:8px 0;border-top:1px dashed var(--line)"><div class="grow"><b>${esc(k)}</b><div class="t-s">최고 중량 ${b.topKg ? fmtKg(b.topKg) : '-'}${b.topDate ? ' (' + fmtD(b.topDate) + ')' : ''} · ${b.n}회 기록</div></div><div style="text-align:right"><div class="t-s">${b.first ? fmtKg(b.first) + ' →' : ''}</div><b style="color:#C2410C">${b.top ? fmtKg(b.top) : '-'}</b> ${up > 0 ? `<span class="tag o" style="margin:0">+${up}%</span>` : ''}</div></div>`; }).join('') : '<div class="t-s">종목을 기록하면 나타납니다</div>'}</div>
+      ${Object.keys(parts).length ? `<div class="card"><div class="t-b" style="margin-bottom:6px">부위별 운동 횟수</div>${hbars(Object.entries(parts).sort((a,b) => b[1] - a[1]).map(([l,v]) => ({ l, v, t: v + '회' })), '#F06A1D')}</div>` : ''}`;
+  }
   // 몸 관리
   const rpeL = L.filter(l => Number(l.rpe)), pain = {}; L.forEach(l => (l.pain||[]).forEach(p => pain[p] = (pain[p]||0) + 1));
   const sleepL = L.map(l => num(l.sleep)).filter(v => v != null);
@@ -1679,14 +1888,14 @@ function renderStats() {
     const ms = Object.keys(byM).sort().slice(-6);
     h += `<div class="sec-t">🏆 월별 승률</div><div class="card">${bars(ms.map(m => ({ l: Number(m.slice(5)) + '월', v: Math.round(byM[m].w / byM[m].n * 100), t: Math.round(byM[m].w / byM[m].n * 100) + '%' })), true)}<div class="t-s" style="text-align:center;margin-top:4px">${ms.map(m => `${Number(m.slice(5))}월 ${byM[m].n}경기`).join(' · ')}</div></div>`;
   }
-  // 지출 (민턴 가계부)
+  // 지출 (운동 가계부)
   const BK = bookItems(), y = now.slice(0,4);
   if (BK.length) {
     const mm = []; for (let i = 5; i >= 0; i--) { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - i); const k = ymd(d).slice(0,7);
       mm.push({ l: (d.getMonth() + 1) + '월', v: BK.filter(x => x.date.startsWith(k)).reduce((a,x) => a + x.amount, 0) }); }
     const yb = BK.filter(x => x.date.startsWith(y)), catY = {}; yb.forEach(x => catY[x.cat] = (catY[x.cat]||0) + x.amount);
     const unitAll = fees().filter(f => Number(f.count)).map(f => Number(f.amount) / Number(f.count));
-    h += `<div class="sec-t">💳 민턴 가계부 <a onclick="go('gear','book')">가계부 ›</a></div><div class="tiles"><div class="tile dark"><b>${won(yb.reduce((a,x) => a + x.amount, 0))}</b><span>${y}년 총 지출</span></div><div class="tile"><b>${unitAll.length ? won(avg(unitAll)) : '-'}</b><span>평균 회당 레슨비</span></div></div>
+    h += `<div class="sec-t">💳 운동 가계부 <a onclick="go('gear','book')">가계부 ›</a></div><div class="tiles"><div class="tile dark"><b>${won(yb.reduce((a,x) => a + x.amount, 0))}</b><span>${y}년 총 지출</span></div><div class="tile"><b>${unitAll.length ? won(avg(unitAll)) : '-'}</b><span>평균 회당 레슨비</span></div></div>
       <div class="card"><div class="t-b">월별 지출</div>${bars(mm.map(m => ({ l: m.l, v: m.v, t: m.v ? Math.round(m.v / 1000) + '천' : '' })))}</div>
       ${Object.keys(catY).length ? `<div class="card"><div class="t-b" style="margin-bottom:6px">${y}년 분류별 지출</div>${Object.entries(catY).sort((a,b) => b[1] - a[1]).map(([l,v]) => `<div class="hbar"><span class="hl">${esc(l)}</span><div class="ht"><div class="hf" style="width:${Math.round(v / Math.max(...Object.values(catY)) * 100)}%;background:${BOOK_COLORS[l] || 'var(--ink3)'}"></div></div><span class="hn" style="width:84px">${won(v)}</span></div>`).join('')}</div>` : ''}`;
   }
