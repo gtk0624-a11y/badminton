@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#14284B">
+<meta http-equiv="Cache-Control" content="no-cache">
 <title>운동로그 · 배드민턴 & 웨이트 기록</title>
 <link rel="icon" id="fav">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
@@ -848,6 +849,13 @@ try { const t = localStorage.getItem('sl_title'); if (t) { $('login-title').text
     box.classList.remove('hidden');
   }
 })();
+/* 새 버전 자동 적용: 휴대폰이 예전 화면을 기억(캐시)하고 있으면 최신 파일과 비교해 한 번 새로고침 */
+const APP_VER = '20261115140921';
+(async () => { try {
+  const t = await (await fetch(location.pathname + '?ck=' + Date.now(), { cache: 'no-store' })).text();
+  const m = t.match(/const APP_VER = '([^']+)'/);
+  if (m && m[1] !== APP_VER && sessionStorage.getItem('ul_reload') !== m[1]) { sessionStorage.setItem('ul_reload', m[1]); location.reload(); }
+} catch (e) {} })();
 window.signIn = async () => { try { await signInWithPopup(auth, provider); } catch (e) { console.error(e); toast(korErr(e)); } };
 window.signOutNow = async () => { if (!confirm('로그아웃 하시겠습니까?')) return; await fbSignOut(auth); };
 
